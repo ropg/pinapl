@@ -401,41 +401,6 @@ function input(header, defaulttext, keyboard, maxlen, fixed_xscale, password)
 
 	end
 end
--- returns text that was input
-
-
-
---[[			dialog(header, text, buttons, font, xscale, yscale, ygap)
-
-dialog presents a dialog screen. It word-wraps and centers what's in text, and prints it
-above the buttons.
-
-
-header:			Text printed in top-left of screen. The current directory is appended to
-				this, see below at 'capture' for details
-				
-text:			The text to be printed in center screen.
-
-buttons:		A table of strings to be printed on buttons underneath the text. The
-				screen is divided into as many columns as there are buttons, and each
-				button is centered within its column. No special measures are taken in
-				case this doesn't fit, so take care your buttons don't overlap. Make sure
-				to also check with vertical screen if the user can switch orientation.
-				If nil is passed in buttons, dialog renders the header and text and then
-				returns immediately.
-
-font, xscale,	Optional parameters determining how the display renders the text. Font
-yscale, ygap	is one of three system fonts (7x8, 8x8 and 8x12 pixels), times their
-				x and y multiplication factors (xscale and yscale). ygap is the line
-				spacing. All of these only used for the text itself, not for the header
-				and the buttons, they follow the system defaults.
-				
-RETURNS:		button_text(str)  -- or -- (nil) if no button table is passed
-				
-Example:		if p.dialog("We got a problem", "Something absolutely frightening just
-				happened and now you need to tell me whether you want me to continue",
-				{"Yes", "No"}) == "Yes" then 
-]]--
 
 function dialog(header, text, buttons, font, xscale, yscale, ygap)
 
@@ -516,64 +481,6 @@ function dialog(header, text, buttons, font, xscale, yscale, ygap)
 	end	
 
 end
-
-
---[[			listbox(header, options, longpress_time, offset, extra_button, no_cancel,
-						xmargin, font, xscale, yscale, ygap)
-
-listbox() lets the user pick from a list of options. Useful for menu structure, used in the editfile() editor.
-
-header:			Text printed in top-left of screen. The current directory is appended to
-				this, see below at 'capture' for details
-				
-options:		A table of the options. Each element in the array can be a string or
-				another table. If it's a string it is used as the displayed string and as
-				the return value, and it is printed in the default colour.
-				In case it's a table, the first element is taken to be an HTML colour
-				string (e.g. "#FF0000" for red). If nil is passed as first element of
-				this table, the default is used. The second element is the string to be
-				printed. If a third string is present, it is used as the return value
-				for listbox when the user selects that option. 
-				
-longpress_time:	longpress return value is set true if the user holds a button for more
-				this many seconds. Default is 0, meaning no longpress detection. If set
-				to true, a default longpress value is used. See	getkeypress() for more
-				information.
-
-offset:			Set which element of the options table to display first.
-
-extra_button:	If this is a text, the first l_but_chrs (default 4) of this are printed
-				on an extra button shown in the listbox. If this button is pressed, the
-				text on the button is returned, with an index of 0
-
-no_cancel:		If set to true, no cancel button is displayed. This is useful for top-
-				level menus where there is nothing to cencel to.
-				
-xmargin:		Number of pixels from left of listbox that the options are printed.
-				
-font, xscale,	Optional parameters determining how the display renders the text. Font
-yscale, ygap	is one of three system fonts (7x8, 8x8 and 8x12 pixels), times their
-				x and y multiplication factors (xscale and yscale). ygap is the line
-				spacing. All of these only used for the options, not for the header
-				and the buttons, they follow the system defaults.
-				
-RETURNS:		return return(str), longpress(true or nil), index(num), offset(num)
-
-return:			The option as displayed, or the third string in the option sub-table.
-
-longpress:		true or nil for whether longpress was detected
-
-index:			The position of the option in the list, or 0 for extra_button
-
-offset:			Item at top of screen when the option was selected
-
-
-Example:
-s = listbox("Some header", {"Option 1", "Option 2", {"#FF0000", "Option 3", "Lalala"}})
-
-				(This will display Options 1 through 3, where the third option is printed
-				in red. On return s will be "Option 1", "Option 2" or "Lalala".)
-]]--
 
 function listbox(header, options, longpress_time, offset,
 		extra_button, no_cancel, xmargin, font, xscale, yscale, ygap)

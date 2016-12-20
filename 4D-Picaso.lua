@@ -5,7 +5,7 @@ This code allows you to display things on the gen4-uLCD-24PT display made by 4D 
 
 This module depends on the lua serial module "luars232" to talk to the display. 
 
-Full documentation of the function in this library is at the above URL, look for the
+Full documentation of the functions in this library is at the above URL, look for the
 "PICASO Serial Command Set Reference Manual".
 
 ==============  example.lua  ==========================================
