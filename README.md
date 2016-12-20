@@ -1,9 +1,9 @@
-# `pinapl` - **PI**caso **N**ano **A**pplication **P**latform in **L**ua
+# `pinapl` - PIcaso Nano Application Platform in Lua
 
-     Build simple apps with dialogs, listboxes, on-screen keyboard and
-     more for the 4D-systems Picaso line of touch-LCD display modules.
+>*A set of libraries to help you build simple apps with dialogs, listboxes, on-screen keyboard and more for the 4D-systems Picaso line of touch-LCD display modules. This will allow you to quickly and cheaply get a user interface on anything that has a serial port.*
 
 # introduction
+
 I've always liked playing with minimal computers and networking. Running OpenWRT, a Linux distribution, on cheap wireless access points was a thing long before cheap and small computing platforms such as the Raspberry Pi, BeagleBone or C.H.I.P. came along. Even with these more powerful systems around, there are still applications where you might want to resort to Access Point-like systems. Maybe you need multiple Ethernet ports, maybe you're building something appliance-like that you'd like to use a super-small wireless module for, maybe you'd like to create something that runs a minimal amount of code for security reasons, or whatever other reason you have.
 
 But suppose you want to build something with it's own user interface. Something completely minimal. Say all you want is to enter an IP-number or pick a wifi network to use and enter the WPA key. Now you're almost forced to use a Raspberry Pi with a special display HAT, or a Beaglebone Black with a display cape, or something similar. And these displays are wonderful. If you have the time to play around, you can make these small displays do amazing things. The displays are connected to the system using SPI, so they are fast and they have a framebuffer interface so you can even use a framebuffer web-browser or run Xwindows on them.
@@ -12,25 +12,44 @@ This project is nothing like that. Here we present an extremely easy way to crea
 
 # the display
 
-I chose to play with the [gen4-uLCD-24PT](http://www.4dsystems.com.au/product/gen4_uLCD_24PT/), a 29 USD display module made by a company called [4D-Systems](http://www.4dsystems.com.au) from Australia. They make a lot of display modules for various systems and applications. The cheapest display they have is the 2.4 inch touch screen that we're using for this project. It has a 320x240 resolution on the touch screen is resistive. Which means you have to push a little harder, and there's no multi-touch or anything fancy like that.
-
-![](images/display-from-datasheet.jpg "the display")
-
-As you can see above, the module has a 30-way ZIF-socket to connect to a flat cable. Fortunately, the display ships with that cable an a small interface board so we don't have to make a circuit board with one of those connectors on it.
-
-![](images/interface-board.jpg "interface board")
-
-The interface board has five header pins (marked +5V, TX, RX, GND and RES, the latter being an active-low reset pin), at the normal 0.254 mm distance. The display, at 2.4 inch diagonal, is quite small, but even typing on a small on-screen QWERTY-keyboard works remarkably well. (I mean: don't plan to write your thesis on it, but it'll do fine if you are entering passwords or even short messages.)
+I chose to play with the [gen4-uLCD-24PT](http://www.4dsystems.com.au/product/gen4_uLCD_24PT/), a 29 USD display module made by a company called [4D-Systems](http://www.4dsystems.com.au) from Australia. They make a lot of display modules for various systems and applications. The cheapest display they have is the 2.4 inch touch screen that we're using for this project. It has a 320x240 resolution on the touch screen is resistive. Which means you have to push a little harder, and there's no multi-touch or anything fancy like that. The custom chip they made for it is called Picaso, hence the name of this project.
 
 The display costs USD 29 if you buy from 4D-systems directly, but it is also carried by quite a few distributors. I bought two of these displays from [Digi-Key](https://www.digikey.com/product-detail/en/4d-systems-pty-ltd/GEN4-ULCD-24PT/1613-1119-ND/5823653), for 60 euros including shipping (to Berlin, Germany). [Mouser](http://eu.mouser.com/search/ProductDetail.aspx?R=0virtualkey0virtualkeygen4-uLCD-24PT) also carries it, as do many other distributors.
 
+![](images/display-from-datasheet.jpg "the display")
+
+As you can see above, the module has a 30-way ZIF-socket to connect to a flat cable. Fortunately, the display ships with that cable and a small interface board so we don't have to make a circuit board with one of those connectors on it.
+
+![](images/interface-board.jpg "interface board")
+
+The interface board has five header pins (marked +5V, TX, RX, GND and RES, the latter being an active-low reset pin), at the normal 2.54 mm distance. The display, at 2.4 inch diagonal, is quite small, but even typing on a small on-screen QWERTY-keyboard works remarkably well. (I mean: don't plan to write your thesis on it, but it'll do fine if you are entering passwords or even short messages.)
+
+| parameter | value |
+| :---- | :---------- |
+| Weight | ~21 g|
+| Input Voltage: | 4.0 - 5.5 V |
+| Power consumption | 150 mA at 5.0 V (typ) |
+| Display Viewing Area | 48.96 x 36.72 mm |
+| Resolution | 320 x 240 pixels |
+| Colour | 16 bits per pixel, 5-6-5 |
+
 ![](images/mechanical-drawing.jpg "mechanical drawing")
+
+Important to note about the display is that the people that built it have their own ideas about how to use it. For one the device has an SD-card slot that I have not used yet. It can be used to store images, movies and sound files that the display can then display or play. (There's a sound output pin on the 30-pin wide flat cable.) 4D-Systems also makes a pretty closed-source Windows IDE that allows you to write code directly on the tiny processor in the display. It also has an interface library with pretty knobs and dials, and it allows for conversion of all Windows fonts to the device.
+
+I'm not presently using any of these features in `pinapl`, although I have implemented the functions for it in the underlying display library, so you can play with them if you like. Not using the SDK comes with some limitations that you need to be aware of:
+
+* No other fonts than the three that the display offers. They are a 7x8 (a.k.a. FONT1, referenced in the functions with the value zero), an 8x8 (FONT2, value one) and a 8x12 font (FONT3, value three).  The 8x8 font suffers from serious kerning issues, so you're left with two fonts. These fonts have no special characters, no extended ASCII, so no accents, Umlaute, etc. etc. The fonts do allow stretching in both directions to make things more readable on such a small screen.
+* The display starts talking at 9600 bps. That's too slow. We up that by talking to it, but it would be cleaner if we could lock it to some higher rate permanently. You can do so with the SDK, if you want to use their Windows software.
+* No images. There is a function to transfer a small area of the screen serially and it works, but it's not very fast, having to transfer 2 bytes per pixel.
+
+I haven't needed it yet, but depending on your application it may be worth using the SDK at least once to load a font with accents and/or change the default port speed.
 
 # other displays?
 
 The code for this project is specific to the serial protocol spoken by this type of display. 4D-Systems does make a number of other displays that use the same "Picaso" chip and speak the same protocol. They also have displays that use the "Diablo" chip, but which seem to speak the same or at least a very similar protocol. The other "Picaso" displays are also 320x240 but they're slightly bigger, so you might want to play with them if you have really large fingers. No idea if the "Diablo" displays work with my code, and I haven't really optimized for larger resolutions, although my code does ask the display how big it is and size objects accordingly, so things might work somewhat.
 
-Nothing says there can't be a simple abstraction layer built between the code that talks to the display and the code that makes pretty dialogs and menus. That way this could talk to other displays that speak different protocols.
+Nothing says there can't be a simple abstraction layer built between the code that talks to the display and the code that makes pretty dialogs and menus. That way this could talk to other displays that speak different protocols. If anyone is aware of really cool touch-displays or other interface components that speak serial, please let me know. 
 
 # hooking it up: my setup
 
@@ -38,7 +57,7 @@ Nothing says there can't be a simple abstraction layer built between the code th
 
 I hooked the display up to the GLi [AR-300M](https://www.gl-inet.com/ar300m/) running its stock firmware (OpenWRT with a custom web interface, although OpenWRT's own luci web-interface is also available under "advanced"). This is a TP-link knock-off (5 x 5 cm pcb), except it has two ethernet ports, more flash, more RAM and a PCIe connector that they say they will have a 5 GHz expansion board for at some point. This router set me back 35 euros on Amazon. If you're on a budget and want to play, the AR-150 model is 20 euros and should work just as well.
 
-The serial port, power and ground are in the blue connector. Note that the RX on the display goes to the TX on your access point or computer and vice versa. The extra red wire is for the reset. Turns out that even if you tell OpenWRT not to use the serial port as a console port (by putting a `#` in front of the line that says "askconsole" in `/etc/inittab) the UBoot bootloader will still get confused if something talks back at it during boot. So the access point would not boot with the display attached. Instead of flashing a bootloader that did not use the serial port, I decided to see if the GPIO line (gpio 16) available on this board was maybe low during boot, so I could use it to keep the display reset during boot. I was lucky, and now this little script wakes up the display after I boot if I call it with '1' as argument. 
+The serial port, power and ground are in the blue connector. 5V is not available on any header connectors on this access point, so that (brown) wire is soldered to the USB connector pin on the bottom of the board. Note that the RX on the display goes to the TX on your access point or computer and vice versa. The extra red wire is for the reset. Turns out that even if you tell OpenWRT not to use the serial port as a console port (by putting a `#` in front of the line that says `askconsole` in `/etc/inittab`) the UBoot bootloader will still get confused if something talks back at it during boot. So the access point would not boot with the display attached. Instead of flashing a bootloader that did not use the serial port, I decided to see if the GPIO line (gpio 16) available on this board was maybe low during boot, so I could tie it to the reset wire to shut the display up during boot. I was lucky, and now this little script called `gpio16` wakes up the display after I boot if I call it with '1' as argument. 
 
 ```sh
 #!/bin/sh
@@ -51,6 +70,30 @@ Now I can also reset the display if it gets confused.
 
 
 # `4D-Picaso.lua`, the display interface library
+
+Alright, so have the display hooked up to the serial port. Now we want to make things happen. To make pinapl, I decided to finally learn Lua, a programming language which is very well suited for these kinds of projects. If you want to use pinapl, you'll need to learn Lua. Which is fun, I promise. If you already speak C, PHP, Python, perl or really any other programming language, this should be easy, but even if you don't Lua is a good choice for a first programming language since it's compact and versatile. The book "Programming in Lua" is a good resource to start with.
+
+So, let's assume you have lua installed on an OpenWRT system. Next you'll need to be able to talk to the serial port. There is a Lua library for that, called lua-rs232, and the `4D-Picaso.lua` library that talks to the display depends on it. So we first install the serial library on OpenWRT: `opkg install lua-rs232`. Then copy the Lua files from this repository to some directory on the system. Now we're ready to make things happen on the display. Create a file `example` and paste this in it. 
+
+```lua
+#!/usr/bin/lua
+
+d = require("4D-Picaso")
+d.init("/dev/ttyS0", 9600)	-- display wakes up at 9600 bps
+d.setbaudWait(57600)		-- switch to 57600 bps
+d.gfx_Cls()
+while true do
+	d.gfx_CircleFilled(math.random(0,319), math.random(0,239), math.random(10,50), math.random(0,65535))
+end
+```
+
+Then type `chmod a+x example` and run it. If your display fills with pretty circles of different sizes, everything works. As you can see the library does all the work of talking to the display, and all you need to do is call functions. I used the letter d for the display library, and all the examples here will assume that you did the same. As you can see we initialise the display at 9600 bps. We could have left off both the arguments to d.init since these are the defaults. The `setbaudWait` command tells both the display and the library to switch to a new speed.
+
+The `gfx_Cls` command clears the screen, after which the `gfx_CircleFilled` function draws a series of filled circles with a center point randomly chosen on the screen, with a random radius between 10 and 50 pixels and a random 16-bit colour.  
+
+The commands and their parameters and return values can be found in the [PICASO Serial Command Set Reference Manual](http://www.4dsystems.com.au/productpages/PICASO/downloads/PICASO_serialcmdmanual_R_1_20.pdf) to be downloaded from the 4D-Systems website. If all you want to do is draw your own things to the display directly then you can stop reading this and just read that document. And even if you do want to use `pinapl`'s dialogs and menus, you are still free to use the commands from this underlying display library directly.
+
+> **Note:** I use 57600 bps because for some reason I cannot get 115200 bps to work between the Access Point and the display. It could be that one of the devices is too far off the actual speed for the two to talk to each other. I'll investigate later, but for now I use 57600 bps as the default higher speed.
 
 # `pinapl.lua`, building applications
 
