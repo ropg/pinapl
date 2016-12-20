@@ -12,11 +12,43 @@ This project is nothing like that. Here we present an extremely easy way to crea
 
 # the display
 
+I chose to play with the [gen4-uLCD-24PT](http://www.4dsystems.com.au/product/gen4_uLCD_24PT/), a 29 USD display module made by a company called [4D-Systems](http://www.4dsystems.com.au) from Australia. They make a lot of display modules for various systems and applications. The cheapest display they have is the 2.4 inch touch screen that we're using for this project. It has a 320x240 resolution on the touch screen is resistive. Which means you have to push a little harder, and there's no multi-touch or anything fancy like that.
+
 ![](images/display-from-datasheet.jpg "the display")
+
+As you can see above, the module has a 30-way ZIF-socket to connect to a flat cable. Fortunately, the display ships with that cable an a small interface board so we don't have to make a circuit board with one of those connectors on it.
+
+![](images/interface-board.jpg "interface board")
+
+The interface board has five header pins (marked +5V, TX, RX, GND and RES, the latter being an active-low reset pin), at the normal 0.254 mm distance. The display, at 2.4 inch diagonal, is quite small, but even typing on a small on-screen QWERTY-keyboard works remarkably well. (I mean: don't plan to write your thesis on it, but it'll do fine if you are entering passwords or even short messages.)
+
+The display costs USD 29 if you buy from 4D-systems directly, but it is also carried by quite a few distributors. I bought two of these displays from [Digi-Key](https://www.digikey.com/product-detail/en/4d-systems-pty-ltd/GEN4-ULCD-24PT/1613-1119-ND/5823653), for 60 euros including shipping (to Berlin, Germany). [Mouser](http://eu.mouser.com/search/ProductDetail.aspx?R=0virtualkey0virtualkeygen4-uLCD-24PT) also carries it, as do many other distributors.
+
+![](images/mechanical-drawing.jpg "mechanical drawing")
+
+# other displays?
+
+The code for this project is specific to the serial protocol spoken by this type of display. 4D-Systems does make a number of other displays that use the same "Picaso" chip and speak the same protocol. They also have displays that use the "Diablo" chip, but which seem to speak the same or at least a very similar protocol. The other "Picaso" displays are also 320x240 but they're slightly bigger, so you might want to play with them if you have really large fingers. No idea if the "Diablo" displays work with my code, and I haven't really optimized for larger resolutions, although my code does ask the display how big it is and size objects accordingly, so things might work somewhat.
+
+Nothing says there can't be a simple abstraction layer built between the code that talks to the display and the code that makes pretty dialogs and menus. That way this could talk to other displays that speak different protocols.
 
 # hooking it up: my setup
 
 ![](images/the-setup.jpg "my setup")
+
+I hooked the display up to the GLi [AR-300M](https://www.gl-inet.com/ar300m/) running its stock firmware (OpenWRT with a custom web interface, although OpenWRT's own luci web-interface is also available under "advanced"). This is a TP-link knock-off (5 x 5 cm pcb), except it has two ethernet ports, more flash, more RAM and a PCIe connector that they say they will have a 5 GHz expansion board for at some point. This router set me back 35 euros on Amazon. If you're on a budget and want to play, the AR-150 model is 20 euros and should work just as well.
+
+The serial port, power and ground are in the blue connector. Note that the RX on the display goes to the TX on your access point or computer and vice versa. The extra red wire is for the reset. Turns out that even if you tell OpenWRT not to use the serial port as a console port (by putting a `#` in front of the line that says "askconsole" in `/etc/inittab) the UBoot bootloader will still get confused if something talks back at it during boot. So the access point would not boot with the display attached. Instead of flashing a bootloader that did not use the serial port, I decided to see if the GPIO line (gpio 16) available on this board was maybe low during boot, so I could use it to keep the display reset during boot. I was lucky, and now this little script wakes up the display after I boot if I call it with '1' as argument. 
+
+```sh
+#!/bin/sh
+
+echo 16 > /sys/class/gpio/export 2>/dev/null
+echo out >/sys/class/gpio/gpio16/direction 2>/dev/null
+echo $1 > /sys/class/gpio/gpio16/value
+```
+Now I can also reset the display if it gets confused.
+
 
 # `4D-Picaso.lua`, the display interface library
 
