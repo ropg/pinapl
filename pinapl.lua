@@ -362,7 +362,12 @@ function input(header, defaulttext, keyboard, maxlen, fixed_xscale, password)
 			end
 						
 		elseif key == 'Done' then
-			return txtbuf
+			if shifted == 1 then
+				return txtbuf
+			else
+				-- on shift-Done, return the cursor position also, for line splitting etc
+				return txtbuf, cursor
+			end
 
 		elseif key == 'Cancel' then
 			return nil
@@ -673,9 +678,13 @@ RETURNS:		path (str), longpress(true or nil), extra_button (true or nil)  -- or 
 ]]--
 
 function browsefile(header, dir, longpress_time, capture, extra_button)
+
+	local header = header or ""
+
 	local dir = dir or "/"
 	if dir:sub(#dir) ~= "/" then dir = dir .. "/" end	-- make sure dir ends in /
 
+	local capture = capture or "/"
 	if capture == true then capture = dir end
 	local dispdir
 	if capture == "/" then dispdir = "/" else dispdir = dir:sub(#capture + 1) end

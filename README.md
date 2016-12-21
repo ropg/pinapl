@@ -10,6 +10,10 @@ But suppose you want to build something with it's own user interface. Something 
 
 This project is nothing like that. Here we present an extremely easy way to create decent-looking functionality using a touch-screen module that has a bit of built-in intelligence and hooks up to anything that has 5 volts and a 5V or 3.3V level serial port available.
 
+[![](images/example-lua.jpg)](http://www.youtube.com/watch?v=k3sRRXSDI7Y)
+
+This video shows the `example.lua` demo application, the code is shown a little bit further down in this text.
+
 # the display
 
 I chose to play with the [gen4-uLCD-24PT](http://www.4dsystems.com.au/product/gen4_uLCD_24PT/), a 29 USD display module made by a company called [4D-Systems](http://www.4dsystems.com.au) from Australia. They make a lot of display modules for various systems and applications. The cheapest display they have is the 2.4 inch touch screen that we're using for this project. It has a 320x240 resolution on the touch screen is resistive. Which means you have to push a little harder, and there's no multi-touch or anything fancy like that. The custom chip they made for it is called Picaso, hence the name of this project.
@@ -137,7 +141,9 @@ if p.dialog("You've got a problem...", "Something bad happened. Continue?", {"Ye
 | :---- | :---------- |
 | `button` | (string) The text on the button that was pressed. Or `nil` if no buttons were given. |
 
+## input
 
+input() allows typing. By default, it will either show a QWRTY keyboard (in landscape mode), or an alphabetically arranged vertical keyboard for the user to type on. The text will, by default, show in FONT3 (8x12), stretched 2x along both axes to 16x24. Once the edge of the screen is reached (15 chars in landscape) it switches to 8x24 characters (also the default size on all buttons). At 30 characters, the text starts scrolling to always show where the user is typing. An underscore under the last character on the left and the right will show if there is more text to show in that direction. By touching the left and right of the display, the user can scroll around and place the cursor wherever she wants.
 
 ## listbox
 

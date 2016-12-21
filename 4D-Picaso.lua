@@ -65,6 +65,7 @@ function init(device, speed)
 	assert(port:set_flow_control(rs232.RS232_FLOW_OFF)  == ok)
 
 	port:read(100, 100, 1)		-- Read any stray bytes still in buffer
+	port:read(100, 100, 1)		-- Read any stray bytes still in buffer
 end
 
 
