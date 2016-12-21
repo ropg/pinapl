@@ -101,16 +101,14 @@ The commands and their parameters and return values can be found in the [PICASO 
 
 # `pinapl.lua`, building applications
 
-To show you how to make applications using `pinapl`, it's probably easiest if we show you the code for the example.lua application that is shown in the video at the top of the page. Here it is: this is all of it.
+To show you how how little you need to do to make to make applications using `pinapl`, it's probably easiest if we show you the code for the example.lua application that is shown in the video at the top of the page. Here it is. This is all of it.
 
 ```lua
 #!/usr/bin/lua
 
-d = require("4D-Picaso")
-p = require("pinapl")
-
-p.init(d)
-
+d = require("4D-Picaso")	-- This allows you to talk to the display directly
+p = require("pinapl")		-- This is the part that makes the dialogs, menus, etc
+p.init(d)					-- Initialize the port and the display
 p.standbytimer = 180		-- Go to sleep if nothing pressed for this many seconds
 
 while true do
@@ -126,59 +124,47 @@ while true do
 	local selected = p.listbox("Main menu", options, nil, nil, nil, true)
 	
 	if selected == "Change hostname" then
-	
 		-- Get current hostname
 		local handle = io.popen("/sbin/uci get system.@system[0].hostname")
 		local oldhostname = handle:read("*a")
-
 		-- Strip off the newline at the end
 		oldhostname = oldhostname:match("^([%a%d%-]+)")
 		handle:close()
-
 		-- Let the user enter a new hostname, present the old one as the default text		
 		local hostname = p.input("Enter hostname:", oldhostname, nil, 63)
-		
 		-- Don't do anything if the user cancelled
 		if hostname then
-		
 			-- Set the new hostname if the hostname is valid
 			if hostname:match("^[%a%d%-]+$") then
 				os.execute ("/sbin/uci set system.@system[0].hostname=" .. hostname)
 				os.execute ("/sbin/uci commit system")
 				os.execute ("/bin/echo " .. hostname .. " > /proc/sys/kernel/hostname")
 				p.dialog("Success", 'Hostname changed to "' .. hostname .. '"', {"OK"})
-			
 			-- Otherwise show an error dialog
 			else
 				p.dialog("Error", '"' .. hostname .. '" is not a valid hostname. \
 				  A hostname can only contain letters, numbers and hyphens (-)', {"OK"})
 			end
-			
 		end
 
 	elseif selected == "Edit a file" then
-
 		p.editfile ( p.browsefile() )
 
 	elseif selected == "See the log" then
-
+		-- This is done this way because Lua's io.popen() locks, even on read(0)
 		os.execute("/sbin/logread >/tmp/logfile")
 		os.execute("/sbin/logread -f >>/tmp/logfile &")
-		
 		p.viewfile("/tmp/logfile", p.wordwrap, true)
-		
 		os.execute("/usr/bin/killall logread >/dev/null 2>&1")
 		os.remove("/tmp/logfile")
 		
 	elseif selected == "Reboot the system" then
-
 		if p.dialog("Reboot?", "You are about to reboot. Are you sure?",
 													{"Yes", "No"}) == "Yes" then
 			os.execute("/sbin/reboot")
 		end
 
 	elseif selected == "Pretty circles" then
-
 		p.clearscreen()
 		-- getkeypress in do_not_block mode, so we can keep drawing pretty circles
 		while not p.getkeypress(nil, nil, true) do
@@ -187,7 +173,6 @@ while true do
 		end
 	
 	elseif selected == "Toggle orientation" then
-
 		-- scr_mode is the global variable containing the current mode
 		if p.scr_mode == 0 then p.screenmode(2) else p.screenmode(0) end
 		
