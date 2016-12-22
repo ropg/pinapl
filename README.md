@@ -191,7 +191,7 @@ end
 <br>
 ## Building appliances
 
-Typically, you would want this display to work when your device boots. And in many situations it will be the only user interface to the device. I've created the following OpenWRT-specific init script to start our example program (see below) and put it at `/etc/init.d/pinapl`:
+Typically, you would want this display to work when your device boots. And in many situations it will be the only user interface to the device. I've created the following OpenWRT-specific init script to start our example program using a shell wrapper. Assuming the files from the repository are at /root/pinapl, the following is saved as `/etc/init.d/pinapl`:
 
 ```sh
 #!/bin/sh /etc/rc.common
@@ -206,11 +206,10 @@ start() {
  
 stop() {          
 	echo stop
-	/usr/bin/killall pinapl-openwrt.sh
-	/usr/bin/killall example.lua
+	/usr/bin/killall pinapl-openwrt.sh >/dev/null 2>&1
+	/usr/bin/killall example.lua >/dev/null 2>&1
 }
 ```
-
 Make this script executable and run it with `/etc/init.d/pinapl enable` to set it up to boot every time. On boot, it starts a second script, at `/root/pinapl/pinapl-openwrt.sh` (which also needs to be executable):
 
 ```sh
@@ -235,6 +234,8 @@ done
 ```
 
 This second script gets executed with the name of the script to start and the GPIO pin as arguments. It will repeatedly call the interface code (in case of errors), resetting the display in between and logging all errors to the system log. All of this is just a quick hack, naturally you can stick files in better places and make a generally more pleasing setup. That said: this runs rock-solid. The display works after boot and the restarting isn't necessary: the code and the display run for days without exiting once.
+
+Note that these examples assume the reset of the display is at GPIO pin 16. You may have to modify your startup script. Or maybe you're working with a completely different system. All of the above is just an example of how you could set this up.
 
 
 <br><br>
@@ -279,9 +280,8 @@ field | description
 
 Because `browsefile` returns `nil` if cancel is pressed, and `editfile` returns nil if called without arguments, the construction `editfile( browsefile("/") )` (as seen in `example.lua`) works. However, one might like to use the longpress feature to make context menus, maybe use an `extra_button` called "New" to create files/directories, etc, etc.
 
-**IMPORTANT NOTE**:	browsefile currently only works on unix systems. That is: it assumes forward slashes  and is calls `ls` to do some of the work.
+**IMPORTANT NOTE**:	browsefile currently only works on unix systems. That is: it assumes forward slashes  and it calls `ls` to do some of the work.
 
-<br>
 ####`browsefile([header], [dir], [longpress_time], [capture], [extra_button])`
 
 ### arguments
@@ -308,7 +308,6 @@ field | description
 
 `clearscreen` does what it says on the box. It does not reset the various parameters (such as line spacing, underline, etc, etc) that the `gfx_Cls` function in the underlying display library resets. It simply draws a rectangle.
 
-<br>
 ####`clearscreen ([colour])`
 
 ### arguments
@@ -333,7 +332,6 @@ if p.dialog("You've got a problem...", "Something bad happened. Continue?", {"Ye
 
 ![](images/dialog.jpg "dialog demo")
 
-<br>
 ####`dialog([header], text, [buttons], [font], [xscale], [yscale], [ygap])`
 
 ### arguments
@@ -357,7 +355,6 @@ field | description
 
 This is the routine where your applications are going to be spening most of their time. Almost all the other functions in this library eventually either block on a call to `getkeypress` (waiting for a key), or they are polling it in `do_not_block` mode in a loop. You can call it yourself too. You generally provide it with a list of rectangles and what you want getkeypress to return if they are pressed. (Or just pass `nil` as buttons to make the whole screen a button. `getkeypress` handles putting the display to sleep after `p.standbytimer` seconds.
 
-<br>
 ####`getkeypress([buttons], [longpress_time], [do_not_block])`
 
 ### arguments
@@ -390,7 +387,6 @@ new_hostname = p.input("Enter hostname:", current_hostname)
 
 The shift key is sticky, meaning that it is pressed before and not during the keypress to be shifted. (This is a resistive touch screen, so there is no multi-touch). Normally shift turns grey when active and release after one more key. If you press shift twice it will lock (shown in red) and stay on for multiple keypresses. Shift-backspace will delete everything left of the cursor.
 
-<br>
 ####`input([header], [defaulttext], [keyboard], [maxlen], [fixed_xscale], [password])`
 
 ### arguments
@@ -446,7 +442,6 @@ s = p.listbox("Some header", {"Option 1", "Option 2", {"#FF0000", "Option 3", "L
 
 ![](images/listbox.jpg "listbox demo")
 
-<br>
 ####`listbox([header], options, [longpress_time], [offset], [extra_button], [no_cancel], [xmargin], [font], [xscale], [yscale], [ygap])`
 
 field | description
@@ -475,7 +470,6 @@ field | description
 
 `sleep` calls the sleep funtion in the display, putting it in a low-power mode until the user presses anywhere on the screen for half a second or so. `sleep` will block until that happens. You would not normally call `sleep` yourself: `getkeypress` takes care of this after `standbytimer` seconds. 
 
-<br>
 ####`sleep()`
 
 ### arguments
