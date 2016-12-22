@@ -2,7 +2,7 @@
 
 >*A set of libraries to help you build simple apps with dialogs, listboxes, on-screen keyboard and more for the 4D-systems Picaso line of touch-LCD display modules. This will allow you to quickly and cheaply get a user interface on anything that has a serial port.*
 
-# introduction
+## introduction
 
 I've always liked playing with minimal computers and networking. Running OpenWRT, a Linux distribution, on cheap wireless access points was a thing long before cheap and small computing platforms such as the Raspberry Pi, BeagleBone or C.H.I.P. came along. Even with these more powerful systems around, there are still applications where you might want to resort to Access Point-like systems. Maybe you need multiple Ethernet ports, maybe you're building something appliance-like that you'd like to use a super-small wireless module for, maybe you'd like to create something that runs a minimal amount of code for security reasons, or whatever other reason you have.
 
@@ -14,7 +14,7 @@ This project is nothing like that. Here we present an extremely easy way to crea
 
 This video shows the `example.lua` demo application, the code is shown a little bit further down in this text.
 
-# the display
+## the display
 
 I chose to play with the [gen4-uLCD-24PT](http://www.4dsystems.com.au/product/gen4_uLCD_24PT/), a 29 USD display module made by a company called [4D-Systems](http://www.4dsystems.com.au) from Australia. They make a lot of display modules for various systems and applications. The cheapest display they have is the 2.4 inch touch screen that I am using for this project. It has a 320x240 resolution on the touch screen is resistive. Which means you have to push a little harder, and there's no multi-touch or anything fancy like that. The custom chip they made for it is called Picaso, hence the name of this project.
 
@@ -49,13 +49,13 @@ I'm not presently using any of these features in `pinapl`, although I have imple
 
 I haven't needed it yet, but depending on your application it may be worth using the SDK at least once to load a font with accents and/or change the default port speed.
 
-# other displays?
+### other displays?
 
 The code for this project is specific to the serial protocol spoken by this type of display. 4D-Systems does make a number of other displays that use the same "Picaso" chip and speak the same protocol. They also have displays that use the "Diablo" chip, but which seem to speak the same or at least a very similar protocol. The other "Picaso" displays are also 320x240 but they're slightly bigger, so you might want to play with them if you have really large fingers. No idea if the "Diablo" displays work with my code, and I haven't really optimized for larger resolutions, although my code does ask the display how big it is and size objects accordingly, so things might work somewhat.
 
 Nothing says there can't be a simple abstraction layer built between the code that talks to the display and the code that makes pretty dialogs and menus. That way this could talk to other displays that speak different protocols. If anyone is aware of really cool touch-displays or other interface components that speak serial, please let me know. 
 
-# hooking it up: my setup
+## hooking it up: my setup
 
 ![](images/the-setup.jpg "my setup")
 
@@ -73,7 +73,7 @@ echo $1 > /sys/class/gpio/gpio16/value
 Now I can also reset the display if it gets confused.
 
 
-# `4D-Picaso.lua`, the display interface library
+## `4D-Picaso.lua`, the display interface library
 
 Alright, so have the display hooked up to the serial port. Now we want to make things happen. To make pinapl, I decided to finally learn Lua, a programming language which is very well suited for these kinds of projects. If you want to use pinapl, you'll need to learn Lua. Which is fun, I promise. If you already speak C, PHP, Python, perl or really any other programming language, this should be easy, but even if you don't Lua is a good choice for a first programming language since it's compact and versatile. The book "Programming in Lua" is a good resource to start with.
 
@@ -103,13 +103,13 @@ Then type `chmod a+x circles.lua` and run it. If your display fills with pretty 
 
 The `gfx_Cls` command clears the screen, after which the `gfx_CircleFilled` function draws a series of filled circles with a center point randomly chosen on the screen, with a random radius between 10 and 50 pixels and a random 16-bit colour.  
 
-Speaking of 16-bit colours: I made the function that parses the arguments so that any numeric value can also be a special colour string, in the hexadecimal HTML format: "#RRGGBB", where "#FF0000" would code for red. This then gets converted to the 16-bit "5-6-5" format the display uses.
+Speaking of 16-bit colours: I made the function that parses the arguments so that any numeric value can also be a special colour string, in the hexadecimal HTML format: `#RRGGBB`, where `#FF0000` would code for red. This then gets converted to the 16-bit "5-6-5" format the display uses.
 
 The commands and their parameters and return values can be found in the [PICASO Serial Command Set Reference Manual](http://www.4dsystems.com.au/productpages/PICASO/downloads/PICASO_serialcmdmanual_R_1_20.pdf) to be downloaded from the 4D-Systems website. If all you want to do is draw your own things to the display directly then you can stop reading this and just read that document. And even if you do want to use `pinapl`'s dialogs and menus, you are still free to use the commands from this underlying display library directly.
 
 > **Note:** I use 57600 bps because for some reason I cannot get 115200 bps to work between the Access Point and the display. It could be that one of the devices is too far off the actual speed for the two to talk to each other. I'll investigate later, but for now I use 57600 bps as the default higher speed.
 
-# `pinapl.lua`, building applications
+## `pinapl.lua`, building applications
 
 ### don't teach me, show me!
 
@@ -211,6 +211,8 @@ Many arguments to the functions are optional. If you want to use the defaults on
 
 <br>
 ##browsefile
+
+![](images/browsefile.jpg "browsefile demo")
 
 `browsefile` presents a file and directory picker. You'll probably notice by its looks that it that uses listbox to display the files and directories internallly. It allows the user to select a file (or a directory if used with `longpress` or `extra_button`).
 
