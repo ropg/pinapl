@@ -104,7 +104,7 @@ The commands and their parameters and return values can be found in the [PICASO 
 
 ### not really a dependecy: luasocket
 
-There's another library that is really useful, although not strictly needed. If you have the TCP/IP socket library available, the `socket.gettime()` function that is used instead of `os.time()`. The latter has a one second precision, where the socket library's function is much more precise (to 1/100's of a second). Precise time is useful, for instance to detect how long a user is pressing a key. Without it, you may have to wait anywhere between 1 and 2 seconds for a context menu. On OpenWRT install the socket library with `opkg install luasocket`.
+`pinapl` doesn't depend on anything but `4D-picaso` (and through it, on `lua-rs232`). But if it finds the TCP/IP socket library available, the `socket.gettime()` function is used instead of `os.time()`. The latter has a one second precision, where the socket library's function is much more precise (to 1/100's of a second). Precise time is useful, for instance to detect how long a user is pressing a key. Without it, you may have to wait anywhere between 1 and 2 seconds for a context menu. On OpenWRT install the socket library with `opkg install luasocket`.
 
 ### don't teach me, show me!
 
@@ -240,7 +240,7 @@ This second script gets executed with the name of the script to start and the GP
 <br><br>
 
 -----
-# function documentation
+# `pinapl` function documentation
 
 All the examples below assume that you have set up the libraries in the way described before:
 
@@ -251,6 +251,20 @@ p = require("pinapl")
 p.init(d)	-- add a serial port device as second argument here if it isn't /dev/ttyS0
 ```
 Many arguments to the functions are optional. If you want to use the defaults on some arguments but pass an argument that comes after, simply pass `nil` in the earlier arguments. 
+
+<br>
+##backlight
+`backlight(state)`
+
+### arguments
+
+field | description
+:---- | :----------
+`state` | *(number or boolean)* if you pass `0` or `false`, the display's backlight is turned off, any other value will turn the backlight on.
+
+### return values
+
+`backlight` does not return any values.
 
 
 <br>
@@ -283,6 +297,23 @@ field | description
 `path` | *(string or `nil`)* This will be `nil` only if the cancel button at the top right is pressed. Note that `browsefile` can only return a directory name (with trailing slash) in conjunction with `longpress` or  `extra_button`. Normally it would simply iterate into this directory and not return.
 `longpress` | *(boolean)*
 `extra_button` | *(boolean)*
+
+
+<br>
+##clearscreen
+`clearscreen([colour])`
+
+`clearscreen` does what it says on the box. It does not reset the various parameters (such as line spacing, underline, etc, etc) that the `gfx_Cls` function in the underlying display library resets. It simply draws a rectangle.
+
+### arguments
+
+field | description
+:---- | :----------
+`colour` | *(number or string)* A colour can be passed as a 16-bit number or as an HTML colour string (e.g. `#FF0000` for red). If no colour is passed, the current default background colour (in the `background` variable) is used.
+
+### return values
+
+`clearsceen` does not return any values.
 				
 
 <br>
@@ -416,8 +447,8 @@ field | description
 `offset` |	*(number)* Set which element of the options table to display first.
 `extra_button` | *(string)* If this is set, the first `l_but_chrs` (default 4) of this are printed on an extra button shown in the listbox. If this button is pressed, the text on the button is returned, with an index of 0
 `no_cancel` |	 *(boolean)* If set to true, no cancel button is displayed. This is useful for top-level menus where there is nothing to cancel to.
-`xmargin` |	*(number)* Number of pixels from left of listbox that the options are printed.
-`font`, `xscale`, `yscale`, `ygap` | *(numbers)* Optional parameters determining how the display renders the text. Font is one of three system fonts (7x8, 8x8 or 8x12 pixels), times their x and y multiplication factors (xscale and yscale). ygap is the line spacing in pixels. All of these only used for the text itself, not for the header and the buttons, those follow the system defaults.
+`xmargin` |	*(number)* Number of pixels from left of listbox edge that the options are printed, default is 10.
+`font`, `xscale`, `yscale`, `ygap` | *(numbers)* Optional parameters determining how the display renders the text. Font is one of three system fonts (7x8, 8x8 or 8x12 pixels), times their x and y multiplication factors (xscale and yscale). ygap is the line spacing in pixels. All of these only used for the options, not for the header and the buttons, those follow the system defaults.
 
 ### return values
 				
@@ -429,3 +460,16 @@ field | description
 `offset` | *(number)* Item at top of screen when the option was selected.
 
 
+<br>
+##sleep
+`sleep()`
+
+`sleep` calls the sleep funtion in the display, putting it in a low-power mode until the user presses anywhere on the screen for half a second or so. `sleep` will block until that happens. You would not normally call `sleep` yourself: `getkeypress` takes care of this after `standbytimer` seconds. 
+
+### arguments
+
+`sleep` has no arguments
+
+### return values
+
+`sleep` does not return any values.
