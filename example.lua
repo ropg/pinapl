@@ -45,7 +45,7 @@ while true do
 		p.editfile ( p.browsefile() )
 
 	elseif selected == "See the log" then
-		-- This is done this way because Lua's io.popen() locks, even on read(0)
+		-- This is done this way because Lua's io.popen() blocks, even on read(0)
 		os.execute("/sbin/logread >/tmp/logfile")
 		os.execute("/sbin/logread -f >>/tmp/logfile &")
 		p.viewfile("/tmp/logfile", p.wordwrap, true)

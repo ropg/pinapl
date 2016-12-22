@@ -115,7 +115,7 @@ keyboards['Sym'] = {
 	{'[',']','+','-','*','=','/','\\'},
 	{'{','}','`','~','|','@','.',','},
 	{'(',')','"','\'',';',':','!','?'},
-	{260, 'Normal|Back'} }
+	{260, 'Back'} }
 keyboards['Num'] = {
 	{0},
 	{30,'1','2','3',60,'<-| <- '},
@@ -135,7 +135,7 @@ keyboards['Vert_Sym'] = {
 	{    '[',']','+','-','*','='},
 	{    '{','}','`','~','|','@'},
 	{    '(',')','"',"'",';',':'},
-	{    '\\','/','_','^', 70, 'Vertical|Back'} }
+	{    '\\','/','_','^', 70, 'Back'} }
 	
 --
 -- Below are the main functions for setting up the display and 
@@ -194,13 +194,14 @@ function input(header, defaulttext, keyboard, maxlen, fixed_xscale, password)
 	local cursor = #txtbuf + 1
 	local offset = -1 	-- special value that means "show last part"
 	local maxlen = maxlen or 4096
-	local default_keyboard
+	local keyboard = keyboard
 	if scr_w > scr_h then
-		default_keyboard = "Normal"
+		keyboard = keyboard or "Normal"
 	else
-		default_keyboard = "Vertical"
+		keyboard = keyboard or "Vertical"
 	end
-	local kbd_buttons, shiftkeydata = drawkeyboard(keyboard or default_keyboard)
+	local previous_keyboard
+	local kbd_buttons, shiftkeydata = drawkeyboard(keyboard)
 	local redrawbuffer = true
 	local xscale = fixed_xscale or i_xscale
 	local smallfontwidth = scr_w / d.x_FontWidth(i_font)
@@ -213,6 +214,7 @@ function input(header, defaulttext, keyboard, maxlen, fixed_xscale, password)
 	while true do
 
 		-- Redraw text buffer if needed
+		--
 		if redrawbuffer then
 			d.gfx_RectangleFilled(0, hdr_height, scr_w - 1, i_kbd_y - 5, i_bg)
 			local text
@@ -308,10 +310,18 @@ function input(header, defaulttext, keyboard, maxlen, fixed_xscale, password)
 		key, x, y = getkeypress (kbd_buttons)
 
 		-- if .. elseif .. elseif .. end handling any keypresses
+		--
 		if keyboards[key] then
 			-- If key points to new keyboard layout, show it
 			shifted = 1
+			previous_keyboard = keyboard
 			kbd_buttons, shiftkeydata = drawkeyboard(key)
+			
+		elseif key == 'Back' then
+			-- Return to previous keyboard, if any
+			shifted = 1
+			kbd_buttons, shiftkeydata = drawkeyboard(previous_keyboard)
+			previous_keyboard = nil
 
 		elseif key == 'Shift' then
 			newshift = shifted + 1
@@ -374,6 +384,7 @@ function input(header, defaulttext, keyboard, maxlen, fixed_xscale, password)
 
 		else
 			
+			-- Anything typed will delete the existing defaulttext password
 			if defaulttext and password then
 				txtbuf = ""
 				cursor = 1
@@ -381,17 +392,22 @@ function input(header, defaulttext, keyboard, maxlen, fixed_xscale, password)
 				defaulttext = nil
 			end
 		
-			if shifted == 1 then key = key:lower() end
-			if shifted == 2 then newshift = 1 end	-- normal shift only for one key
+			if shifted == 1 then key = key:lower() end	-- lower case normally
+			if shifted == 2 then newshift = 1 end		-- normal shift only for one key
 
-			if #txtbuf < maxlen then
-				txtbuf = txtbuf:sub(1, cursor - 1) .. key .. txtbuf:sub(cursor)
-				cursor = cursor + #key
-				-- if cursor walks off screen, scroll along
-				if cursor > offset + windowwidth then
-					offset = offset + #key
+			-- Add key to buffer
+			for n = 1, #key do
+				-- Add multi-letter keys one char at a time because maxlen
+				local keyltr = key:sub(n, n)
+				if #txtbuf < maxlen then
+					txtbuf = txtbuf:sub(1, cursor - 1) .. keyltr .. txtbuf:sub(cursor)
+					cursor = cursor + 1
+					-- if cursor walks off screen, scroll along
+					if cursor > offset + windowwidth then
+						offset = offset + 1
+					end
+					redrawbuffer = true
 				end
-				redrawbuffer = true
 			end
 
 		end
@@ -634,48 +650,6 @@ function listbox(header, options, longpress_time, offset,
 	end	
 	
 end
--- Returns button-text, longpress, index, offset
-
-
-
---[[			browsefile(header, dir, longpress_time, capture, extra_button)
-
-browsefile presents a file and directory picker that uses listbox internallly. It allows
-the user to select a file.
-
-IMPORTANT NOTE:	browsefile currently only works on unix systems
-
-header:			Text printed in top-left of screen. The current directory is appended to
-				this, see below at 'capture' for details
-				
-dir:			Absolute path to starting directory, may be with or without trailing
-				slash.
-				
-longpress_time:	longpress return value is set true if the user holds a button for more
-				this many seconds. Default is 0, meaning no longpress detection. See
-				getkeypress() for more information.
-
-capture:		If set to true, the user cannot '..' her way out of the starting
-				directory, and paths are shown relative to starting point.
-
-extra_button:	If this is a text, the first l_but_chrs (default 4) of this are printed
-				on an extra button shown in the listbox. If this button is pressed, the
-				current directory is passed back, and the extra_button return value is
-				true.
-				
-NOTES:			browsefile() can only return a directory name (with trailing slash) 
-				through longpress or through user pressing extra_button. Normally it
-				would simply iterate into this directory and not return.
-				
-				Because browsefile() returns nil if cancel is pressed, and editfile()
-				returns nil if called without arguments, the construction
-						editfile(browsefile("/"))
-				works. However, one might like to use longpress to make context menus,
-				maybe use an extra_button called "New" to create files/directories, etc.
-				
-RETURNS:		path (str), longpress(true or nil), extra_button (true or nil)  -- or --
-				(nil) 	<-- if cancel is pressed
-]]--
 
 function browsefile(header, dir, longpress_time, capture, extra_button)
 
@@ -686,9 +660,10 @@ function browsefile(header, dir, longpress_time, capture, extra_button)
 
 	local capture = capture or "/"
 	if capture == true then capture = dir end
-	local dispdir
-	if capture == "/" then dispdir = "/" else dispdir = dir:sub(#capture + 1) end
 
+	local dispdir = dir
+	if #capture > 1 then dispdir = dir:sub(#capture + 1) end
+	
 	while true do
 	
 		local d = {}
@@ -877,30 +852,6 @@ function editfile(filename)
 	end
 end
 
---[[			getkeypress(buttons, longpress_time, do_not_block)
-
-buttons:		An array. Each item is another array that holds the coordinates of the 
-				key (x1, y1, x2, y2) followed by the name of the key. The name of the
-				key pressed and released is returned by getkeypress. If no buttons array
-				is passed then the entire screen is the button, and getkeypress will
-				return "OK" when the user presses anywhere on the screen.
-longpress_time:	longpress return value is set true if the user holds a button for more
-				this many seconds. Default is 0, meaning no longpress detection. (In
-				this case getkeypress will return on the touch, not on the release.)
-				If longpress_time is set to true, getkeypress picks 1 or 2 depending on
-				the availability of socket.gettime(). If socket not available, the one
-				second resolution of os.clock() makes longpress detection take anywhere
-				between exactly 1 and 2 seconds.
-do_not_block:	As name implies: makes getkeypress non-blocking. Will return nil if no
-				key is pressed. Unless a key was just pressed, the calling code needs to
-				set "p.keytimer = p.time()" before calling the first time to use the
-				standby timer, or set p.keytimer to nil if standbytimer is to be disabled.
-				Note that if longpress_time is also set, this will still work (and block
-				for the time the screen is touched) in do_not_block mode.
-				
-RETURNS:		keyname(str), x(num), y(num), longpress(true or nil)	-- or --
-				(nil) 	<-- if do_not_block and nothing pressed.
-]]--
 function getkeypress(buttons, longpress_time, do_not_block)
 	local buttons = buttons or {{0, 0, scr_w - 1, scr_h - 1, "OK"}}
 	if longpress_time == true then
@@ -952,6 +903,14 @@ end
 function clearscreen(colour)
 	colour = colour or background
 	d.gfx_RectangleFilled(0, 0, scr_w - 1, scr_h - 1, background)
+end
+
+function backlight(state)
+	if state == false or state == 0 then
+		d.pin_Lo(6)
+	else
+		d.pin_Hi(6)
+	end
 end
 
 function drawcancelbutton()
