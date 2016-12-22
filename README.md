@@ -257,7 +257,7 @@ Many arguments to the functions are optional. If you want to use the defaults on
 
 Turn the display's backlight on and off. Note that the display backlight is rated to take 30,000 hours to shine half as bright. That is roughly three years, so do not keep the display on all the time on an appliance that is going to be sitting in a corner somewhere. 
 
-###`backlight(state)`
+####`backlight(state)`
 
 ### arguments
 
@@ -282,7 +282,7 @@ Because `browsefile` returns `nil` if cancel is pressed, and `editfile` returns 
 **IMPORTANT NOTE**:	browsefile currently only works on unix systems. That is: it assumes forward slashes  and is calls `ls` to do some of the work.
 
 <br>
-###`browsefile([header], [dir], [longpress_time], [capture], [extra_button])`
+####`browsefile([header], [dir], [longpress_time], [capture], [extra_button])`
 
 ### arguments
 
@@ -309,7 +309,7 @@ field | description
 `clearscreen` does what it says on the box. It does not reset the various parameters (such as line spacing, underline, etc, etc) that the `gfx_Cls` function in the underlying display library resets. It simply draws a rectangle.
 
 <br>
-###`clearscreen ([colour])`
+####`clearscreen ([colour])`
 
 ### arguments
 
@@ -334,7 +334,7 @@ if p.dialog("You've got a problem...", "Something bad happened. Continue?", {"Ye
 ![](images/dialog.jpg "dialog demo")
 
 <br>
-###`dialog([header], text, [buttons], [font], [xscale], [yscale], [ygap])`
+####`dialog([header], text, [buttons], [font], [xscale], [yscale], [ygap])`
 
 ### arguments
 
@@ -358,7 +358,7 @@ field | description
 This is the routine where your applications are going to be spening most of their time. Almost all the other functions in this library eventually either block on a call to `getkeypress` (waiting for a key), or they are polling it in `do_not_block` mode in a loop. You can call it yourself too. You generally provide it with a list of rectangles and what you want getkeypress to return if they are pressed. (Or just pass `nil` as buttons to make the whole screen a button. `getkeypress` handles putting the display to sleep after `p.standbytimer` seconds.
 
 <br>
-###`getkeypress([buttons], [longpress_time], [do_not_block])`
+####`getkeypress([buttons], [longpress_time], [do_not_block])`
 
 ### arguments
 
@@ -391,7 +391,7 @@ new_hostname = p.input("Enter hostname:", current_hostname)
 The shift key is sticky, meaning that it is pressed before and not during the keypress to be shifted. (This is a resistive touch screen, so there is no multi-touch). Normally shift turns grey when active and release after one more key. If you press shift twice it will lock (shown in red) and stay on for multiple keypresses. Shift-backspace will delete everything left of the cursor.
 
 <br>
-###`input([header], [defaulttext], [keyboard], [maxlen], [fixed_xscale], [password])`
+####`input([header], [defaulttext], [keyboard], [maxlen], [fixed_xscale], [password])`
 
 ### arguments
 
@@ -447,7 +447,7 @@ s = p.listbox("Some header", {"Option 1", "Option 2", {"#FF0000", "Option 3", "L
 ![](images/listbox.jpg "listbox demo")
 
 <br>
-###`listbox([header], options, [longpress_time], [offset], [extra_button], [no_cancel], [xmargin], [font], [xscale], [yscale], [ygap])`
+####`listbox([header], options, [longpress_time], [offset], [extra_button], [no_cancel], [xmargin], [font], [xscale], [yscale], [ygap])`
 
 field | description
 :---- | :----------
