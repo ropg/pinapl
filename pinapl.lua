@@ -822,7 +822,12 @@ function editfile(filename)
 	local extra_button = nil
 	local offset = 1
 	local t = {}
-    local file = assert(io.open(filename))
+    local file, err = io.open(filename)
+    if not file then
+    	dialog("Error", "Cannot read " .. err, {"OK"})
+    	return
+    end
+    
     for line in file:lines() do
         t[#t + 1] = line
     end
@@ -835,7 +840,11 @@ function editfile(filename)
 	    	return
 		elseif ptr == 0 then	-- extra_button ("Save")
 			-- Save the file
-	    	local file = io.open(filename, "w")
+	    	local file, err = io.open(filename, "w")
+			if not file then
+				dialog("Error", "Cannot write to " .. err, {"OK"})
+				return
+			end
 	    	local index, value
 	    	for index, value in ipairs(t) do
 	    		file:write(value .. "\n")
@@ -1017,7 +1026,7 @@ function wordwrap(str, limit)
 	return Lines
 end
 
-function wrap(str,limit)
+function wrap(str, limit)
 	local lines = {}
 	repeat
 		lines[#lines+1] = str:sub(1, limit)
