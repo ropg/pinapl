@@ -16,7 +16,7 @@ This video shows the `example.lua` demo application, the code is shown a little 
 
 ## the display
 
-I chose to play with the [gen4-uLCD-24PT](http://www.4dsystems.com.au/product/gen4_uLCD_24PT/), a 29 USD display module made by a company called [4D-Systems](http://www.4dsystems.com.au) from Australia. They make a lot of display modules for various systems and applications. The cheapest display they have is the 2.4 inch touch screen that I am using for this project. It has a 320x240 resolution on the touch screen is resistive. Which means you have to push a little harder, and there's no multi-touch or anything fancy like that. The custom chip they made for it is called Picaso, hence the name of this project.
+I chose to play with the [gen4-uLCD-24PT](http://www.4dsystems.com.au/product/gen4_uLCD_24PT/), a 29 USD display module made by a company called [4D-Systems](http://www.4dsystems.com.au) from Australia. They make a lot of display modules for various systems and applications. The cheapest display they have is the 2.4 inch touch screen that I am using for this project. It has a 320x240 resolution and the touch screen is resistive. Which means you have to push a little harder than on your smartphone, and there's no multi-touch or anything fancy like that. The custom chip they made for it is called Picaso, hence the name of this project.
 
 The display costs USD 29 if you buy from 4D-systems directly, but it is also carried by quite a few distributors. I bought two of these displays from [Digi-Key](https://www.digikey.com/product-detail/en/4d-systems-pty-ltd/GEN4-ULCD-24PT/1613-1119-ND/5823653), for 60 euros including shipping (to Berlin, Germany). [Mouser](http://eu.mouser.com/search/ProductDetail.aspx?R=0virtualkey0virtualkeygen4-uLCD-24PT) also carries it, as do many other distributors.
 
@@ -55,33 +55,23 @@ The code for this project is specific to the serial protocol spoken by this type
 
 Nothing says there can't be a simple abstraction layer built between the code that talks to the display and the code that makes pretty dialogs and menus. That way this could talk to other displays that speak different protocols. If anyone is aware of really cool touch-displays or other interface components that speak serial, please let me know. 
 
+<br>
 ## hooking it up: my setup
 
 ![](images/the-setup.jpg "my setup")
 
 I hooked the display up to the GLi [AR-300M](https://www.gl-inet.com/ar300m/) running its stock firmware (OpenWRT with a custom web interface, although OpenWRT's own luci web-interface is also available under "advanced"). This is a TP-link knock-off (5 x 5 cm pcb), except it has two ethernet ports, more flash, more RAM and a PCIe connector that they say they will have a 5 GHz expansion board for at some point. This router set me back 35 euros on Amazon. If you're on a budget and want to play, the AR-150 model is 20 euros and should work just as well.
 
-The serial port, power and ground are in the blue connector. 5V is not available on any header connectors on this access point, so that (brown) wire is soldered to the USB connector pin on the bottom of the board. Note that the RX on the display goes to the TX on your access point or computer and vice versa. The extra red wire is for the reset. Turns out that even if you tell OpenWRT not to use the serial port as a console port (by putting a `#` in front of the line that says `askconsole` in `/etc/inittab`) the UBoot bootloader will still get confused if something talks back at it during boot. So the access point would not boot with the display attached. Instead of flashing a bootloader that did not use the serial port, I decided to see if the GPIO line (gpio 16) available on this board was maybe low during boot, so I could tie it to the reset wire to shut the display up during boot. I was lucky, and now this little script called `gpio16` wakes up the display after I boot if I call it with '1' as argument. 
+The serial port, power and ground are in the blue connector. 5V is not available on any header connectors on this access point, so that (brown) wire is soldered to the USB connector pin on the bottom of the board. Note that the RX on the display goes to the TX on your access point or computer and vice versa. The extra red wire is for the reset. Turns out that even if you tell OpenWRT not to use the serial port as a console port (by putting a `#` in front of the line that says `askconsole` in `/etc/inittab`) the UBoot bootloader will still get confused if something talks back at it during boot. So the access point would not boot with the display attached. Instead of flashing a bootloader that did not use the serial port, I decided to see if the GPIO line (gpio 16) available on this board was maybe low during boot, so I could tie it to the reset wire to shut the display up during boot. I was lucky. Cool: now I can also reset the display if it gets confused. Below, in the "building appliances" chapter, you can see how this is used.
 
-```sh
-#!/bin/sh
-
-echo 16 > /sys/class/gpio/export 2>/dev/null
-echo out >/sys/class/gpio/gpio16/direction 2>/dev/null
-echo $1 > /sys/class/gpio/gpio16/value
-```
-Now I can also reset the display if it gets confused.
-
-
+<br>
 ## `4D-Picaso.lua`, the display interface library
 
 Alright, so have the display hooked up to the serial port. Now we want to make things happen. To make pinapl, I decided to finally learn Lua, a programming language which is very well suited for these kinds of projects. If you want to use pinapl, you'll need to learn Lua. Which is fun, I promise. If you already speak C, PHP, Python, perl or really any other programming language, this should be easy, but even if you don't Lua is a good choice for a first programming language since it's compact and versatile. The book "Programming in Lua" is a good resource to start with.
 
-### dependencies
+### dependency: lua-rs232
 
-So, let's assume you have lua installed on an OpenWRT system. Next you'll need to be able to talk to the serial port. There is a Lua library for that, called `lua-rs232`, and the `4D-Picaso.lua` library that talks to the display depends on it. So we first install the serial library on OpenWRT: `opkg install lua-rs232`. Then copy the Lua files from this repository to some directory on the system.
-
-There's another library that is really useful, although not strictly needed. If you have the TCP/IP socket library available, the `socket.gettime()` function that is used instead of `os.time()`. The latter has a one second precision, where the socket library's function is much more precise (to 1/100's of a second). Precise time is useful, for instance to detect how long a user is pressing a key. Without it, you may have to wait anywhere between 1 and 2 seconds for a context menu. On OpenWRT install the socket library with `opkg install luasocket`.
+So, let's assume you have lua installed on an OpenWRT system. Next you'll need to be able to talk to the serial port. There is a Lua library for that, called `lua-rs232`, and the `4D-Picaso.lua` library that talks to the display depends on it. So we first install the serial library on OpenWRT: `opkg install lua-rs232`. Then copy the Lua files from this repository to some directory on the system. We used `/root/pinapl` as the directory to place the files from this repository in the examples.
 
 ### let's go!
 
@@ -109,7 +99,12 @@ The commands and their parameters and return values can be found in the [PICASO 
 
 > **Note:** I use 57600 bps because for some reason I cannot get 115200 bps to work between the Access Point and the display. It could be that one of the devices is too far off the actual speed for the two to talk to each other. I'll investigate later, but for now I use 57600 bps as the default higher speed.
 
+<br>
 ## `pinapl.lua`, building applications
+
+### not really a dependecy: luasocket
+
+There's another library that is really useful, although not strictly needed. If you have the TCP/IP socket library available, the `socket.gettime()` function that is used instead of `os.time()`. The latter has a one second precision, where the socket library's function is much more precise (to 1/100's of a second). Precise time is useful, for instance to detect how long a user is pressing a key. Without it, you may have to wait anywhere between 1 and 2 seconds for a context menu. On OpenWRT install the socket library with `opkg install luasocket`.
 
 ### don't teach me, show me!
 
@@ -193,6 +188,55 @@ while true do
 end
 ```
 
+<br>
+## Building appliances
+
+Typically, you would want this display to work when your device boots. And in many situations it will be the only user interface to the device. I've created the following OpenWRT-specific init script to start our example program (see below) and put it at `/etc/init.d/pinapl`:
+
+```sh
+#!/bin/sh /etc/rc.common
+ 
+START=15
+STOP=15
+ 
+start() {        
+	echo start
+	/root/pinapl/pinapl-openwrt.sh example.lua 16 &
+}                 
+ 
+stop() {          
+	echo stop
+	/usr/bin/killall pinapl-openwrt.sh
+	/usr/bin/killall example.lua
+}
+```
+
+Make this script executable and run it with `/etc/init.d/pinapl enable` to set it up to boot every time. On boot, it starts a second script, at `/root/pinapl/pinapl-openwrt.sh` (which also needs to be executable):
+
+```sh
+#!/bin/sh
+
+cd /root/pinapl
+
+echo $2 > /sys/class/gpio/export 2>/dev/null
+echo out >/sys/class/gpio/gpio$2/direction 2>/dev/null
+
+while [ 1 == 1 ]; do
+	
+	logger -p user.info -t pinapl "Starting display"
+	echo 1 > /sys/class/gpio/gpio$2/value
+	sleep 5
+	logger -p user.info -t pinapl "Starting $1"	
+	./$1 > /tmp/pinapl.log 2>&1
+	logger -p user.crit -t pinapl "`head -1 /tmp/pinapl.log`"
+	echo 0 > /sys/class/gpio/gpio$2/value
+ 
+done
+```
+
+This second script gets executed with the name of the script to start and the GPIO pin as arguments. It will repeatedly call the interface code (in case of errors), resetting the display in between and logging all errors to the system log. All of this is just a quick hack, naturally you can stick files in better places and make a generally more pleasing setup. That said: this runs rock-solid. The display works after boot and the restarting isn't necessary: the code and the display run for days without exiting once.
+
+
 <br><br>
 
 -----
@@ -214,9 +258,9 @@ Many arguments to the functions are optional. If you want to use the defaults on
 
 ![](images/browsefile.jpg "browsefile demo")
 
-`browsefile` presents a file and directory picker. You'll probably notice by its looks that it that uses listbox to display the files and directories internallly. It allows the user to select a file (or a directory if used with `longpress` or `extra_button`).
+`browsefile` presents a file and directory picker. You might notice by its looks that it that uses `listbox` to display the files and directories internallly. It allows the user to select a file (or a directory if used with `longpress` or `extra_button`).
 
-Because `browsefile` returns `nil` if cancel is pressed, and `editfile` returns nil if called without arguments, the construction `editfile( browsefile("/") )` works. However, one might like to use the longpress feature to make context menus, maybe use an `extra_button` called "New" to create files/directories, etc, etc.
+Because `browsefile` returns `nil` if cancel is pressed, and `editfile` returns nil if called without arguments, the construction `editfile( browsefile("/") )` (as seen in `example.lua`) works. However, one might like to use the longpress feature to make context menus, maybe use an `extra_button` called "New" to create files/directories, etc, etc.
 
 **IMPORTANT NOTE**:	browsefile currently only works on unix systems. That is: it assumes forward slashes  and is calls `ls` to do some of the work.
 
@@ -329,7 +373,7 @@ field | description
 
 ### Defining your own keyboards 
 
-You can define your own keyboards for use with `input`. If you look at the code in `pinapl.lua`, you'll see the keyboard layouts in the beginning. You can add your own keyboard by adding a keyboard anywhere after the `p = require("pinapl") statement`. The numeric keypad `pinapl` provides has the phone layout (with the `1` in the left top). Say we want a keyboard in calculator layout (with the `7` in the left top). In that case, we would just have the following code after that `require` statement:
+You can define your own keyboards for use with `input`. If you look at the code in `pinapl.lua`, you'll see the keyboard layouts in the beginning. You can add your own keyboard by adding a keyboard anywhere after the `p = require("pinapl") statement`. The numeric keypad `pinapl` provides has the phone layout (with the `1` in the left top). Say we want a numeric keyboard in calculator layout (with the `7` in the left top). In that case, we would just have the following code after that `require` statement:
 
 ```lua
 p.keyboards['Calc'] = {
@@ -340,13 +384,13 @@ p.keyboards['Calc'] = {
 	{60,'0','.', 60, 'Done'} }
 ```
 
-Now to use this keyboard all you need to do is call `input` with `Calc` as the `keyboard` argument. 
+Now to use this keyboard all you need to do is call `input` with `'Calc'` as the `keyboard` argument. 
 
 Each element in the keyboards table is another table. It contains another table for each row of keys. Each element in this row is either a string with a key name or a number of pixels spacing before/between keys to be inserted. If the string for a key has a `|` in it, it means that the part after the `|` is displayed on the keyboard while the part before is what is returned as typed. Nothing says a key can only return one character, this allows for macros for words often typed.
 
 The values `Back`, `Done` and `<-` are special. `Back` returns to the previous keyboard (this works only one step deep), `Done` codes as the end of user input, and `<-` codes for a backspace. If the value returned by a key is the name of another keyboard, it is shown instead. Use upper case letters on the display, and their lower-case equivalent will be shown if shift is not pressed. Any single letter will be shown with an xscale of 2, any longer string will be condensed (xscale 1).
 
-*As you can see in the code, the `Normal` keyboard has spacings of `-1` for the keys on the top row. This makes keys overlap by one pixel and was a quick hack to make the keys on the top row fit neatly. Also note that if you do manage to load a font with special characters on the display, `input` may need some work to deal with them. The `:lower()` funtion may not know the lower case equivalent of an accented letter, for instance.*
+*As you can see in the code, the `Normal` keyboard has spacings of `-1` for the keys on the top row. This makes keys overlap by one pixel and was a quick hack to make the keys on the top row fit neatly. Also note that if you do manage to use the 4D-Systems windows software to load a font with special characters on the display, `input` may need some work to deal with them. The `:lower()` funtion may not know the lower case equivalent of an accented letter, for instance.*
 
 
 <br>
