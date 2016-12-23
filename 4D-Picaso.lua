@@ -79,18 +79,31 @@ end
 -- Does the actual work for cmd(), but can also be called directly if something
 -- non-standard (such as a non-null-terminated string) needs to be passed
 function cmd_literal(command, ret_words, send)
-	send = hex(command) .. send
-	local err, lenwritten = port:write(send)			-- write output s
-	assert (err == rs232.RS232_ERR_NOERROR, rs232.error_tostring(err))	
-	if ret_words ~= -1 then
-		local data = readbytes(ret_words * 2 + 1, 300)
-		assert (data, "Nothing received from display")
-		assert (string.sub(data,1,1) == hex("06"), 
-						"Something other than ACK rcvd (" .. string.byte(data,1) .. ")")
+	local err, data, size
+	local send = hex(command) .. send
+	if ret_words == -1 then
+		port:write(send)
+	else
+		repeat
+			port:write(send)
+			err, data, size = port:read(1, 100, 1)
+			
+			-- Sometimes the display gets borked. It needs to be unborked by sending
+			-- 0x0200 . It's not in the manual. I found it by scanning for commands
+			-- that send ACK in borked state.
+			if data:byte() == 21 then
+				port:read(100, 10, 1)
+				port:write(hex("0200"))
+				port:read(100, 10, 1)
+			end
+			
+	 	until data:byte() == 6
+	 	
+		err, data, size = port:read(ret_words * 2)
 		if ret_words > 0 then
 			local rets = {}
-			for i = 1, ret_words do
-				rets[i] = b2n(string.sub(data, i*2, i*2 + 1))
+			for i = 1, ret_words * 2, 2 do
+				rets[i] = b2n(string.sub(data, i, i + 1))
 			end
 			return unpack(rets)
 		end
@@ -159,10 +172,6 @@ function colour(s)
 	return math.floor(red/8) * 2048 + math.floor(green/4) * 32 + math.floor(blue / 8)
 end
 
-function sleep(n)  -- seconds
-  local t0 = os.clock()
-  while os.clock() - t0 <= n do end
-end
 
 --
 -- Actual functions that interact with the display
@@ -273,8 +282,8 @@ function setbaudWait(speed)
 	assert(rs232["RS232_BAUD_" .. speed], "Speed not available on port: " .. speed)
 
 	-- Tell display about new baudrate
-	cmd("0026", -1, baud[speed])	--   -1 means do not wait for ACK
-	sleep (0.05) -- 50 ms to allow data to get out
+	cmd("0026", -1, baud[speed])				-- -1 means do not wait for ACK
+	port:read(1,50,1) 		-- dummy: 50 ms for data to get out
 
 	-- Set new baudrate on local port
 	local ok = rs232.RS232_ERR_NOERROR
