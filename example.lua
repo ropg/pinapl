@@ -2,8 +2,10 @@
 
 d = require("4D-Picaso")	-- This allows you to talk to the display directly
 p = require("pinapl")		-- This is the part that makes the dialogs, menus, etc
-p.init(d)					-- Initialize the port and the display
+
 p.standbytimer = 180		-- Go to sleep if nothing pressed for this many seconds
+
+p.init(d)					-- Initialize the port and the display
 
 while true do
 

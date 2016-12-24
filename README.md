@@ -117,8 +117,10 @@ Here is the code for the example.lua application that is shown in the video at t
 
 d = require("4D-Picaso")	-- This allows you to talk to the display directly
 p = require("pinapl")		-- This is the part that makes the dialogs, menus, etc
-p.init(d)					-- Initialize the port and the display
+
 p.standbytimer = 180		-- Go to sleep if nothing pressed for this many seconds
+
+p.init(d)						-- Initialize the port and the display
 
 while true do
 
@@ -379,6 +381,43 @@ field | description
 
 
 <br>
+## init
+
+Before you can start using the display, you call init. The proper order is to first `require` both libraries, then change any defaults and then call init. You'll notice that the `4D-Picaso` library also has an `init` function, but you don't need to call it if you use `pinapl`; its `init` will call the other one. So here's an example for how your code might start:
+
+```lua
+d = require("4D-Picaso")
+p = require("pinapl")
+
+p.standbytimer = 180
+p.scr_mode = 2
+
+p.init(d, '/dev/cua0', 9600, 19200)
+```
+
+The first line makes the functions of the display library available in the namespace `d`. What that means is that you can call these functions directly from your program if you put `d.` in front of them. Look at the "pretty circles" from `example.lua` to see how you might use these functions to talk to the display directly.
+
+The second line does the same for the higher-level functions in `pinapl`, as `p`. Now that the defaults are loaded, we can overwrite some of them. You'll find all the defaults you can tinker with by just looking at the code in `pinapl.lua`. In this case we set the standby-timer to 3 minutes, and we make the screen start in a vertical orientation. (See [`screenmode`](#screenmode))
+
+We then start talking to the display, turn on it's touch-screen, set it to the desired speed, put it in the right orientation and so on, by running `init`. Init needs to be told how to talkj to the display, so we're passing it a pointer to that as the first argument. Then we use `/dev/cua0` as the serial port on our end, we start at the factory setting of 9600 bps and then take it to 19200 bps.
+
+####`init(4D-picaso, [port], [initial_speed], [working_speed])`
+
+### arguments
+
+field | description
+:---- | :----------
+`4D-picaso` | *(namespace)* Pointer to the namespace for the `4D-Picaso` library. 
+`port` | *(string)* The serial device on your end that is used to talk to the display. Defaults to `/dev/ttyS0`.
+`initial_speed` | *(number)* The speed that the display expects when it is powered on. Factory setting for the display, and default for `init`, is 9600 bps. This can be changed on the display if you use the 4D-Systems proprietary Windows software.
+`working_speed` | *(number)* This is the speed the display will be set to first thing as `init` starts talking to it. Defaults to 57600 because I had trouble getting it to work at 115200 with my particular system, but I haven't really investigated whether this is a problem with my system or the display. 57600 is fast enough, 9600 will noticably slow things down.
+
+### return values
+
+`init` does not return any values.
+
+
+<br>
 ## input
 
 ```lua
@@ -448,6 +487,8 @@ s = p.listbox("Some header", {"Option 1", "Option 2", {"#FF0000", "Option 3", "L
 
 ####`listbox([header], options, [longpress_time], [offset], [extra_button], [no_cancel], [xmargin], [font], [xscale], [yscale], [ygap])`
 
+### arguments
+
 field | description
 :---- | :----------
 `header` | *(string)* Text printed in top-left of screen. The current directory is appended to this, see below at 'capture' for details
@@ -470,9 +511,26 @@ field | description
 
 
 <br>
-##sleep
+## screenmode
 
-`sleep` calls the sleep funtion in the display, putting it in a low-power mode until the user presses anywhere on the screen for half a second or so. `sleep` will block until that happens. You would not normally call `sleep` yourself: [`getkeypress`](#getkeypress) takes care of this after `standbytimer` seconds. 
+Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets two variables, called `scr_w` and `scr_h` for the width and height of the display in pixels respectively. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty cicles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles.
+
+#### `screenmode(mode)`
+
+### arguments
+
+field | description
+:---- | :----------
+mode | *(number)* 0 through 3 to indicate the new orientation of the screen. 0 means landscape with the flat-cable to the screen on the left, 1 is landscape the other way. 2 is portrait with the cable at the top, 3 is portrait the other way.
+
+### return values
+
+`screenmode` does not return any values.
+
+<br>
+## sleep
+
+`sleep` calls the sleep function in the display, putting it in a low-power mode until the user presses anywhere on the screen for half a second or so. `sleep` will block until that happens. You typically do not need to call `sleep` yourself: [`getkeypress`](#getkeypress) takes care of this after `standbytimer` seconds. 
 
 ####`sleep()`
 
@@ -483,3 +541,30 @@ field | description
 ### return values
 
 `sleep` does not return any values.
+
+
+<br>
+## viewfile
+
+```lua
+p.viewfile("/tmp/logfile", p.wordwrap, true)
+```
+
+![](images/viewfile.jpg)
+
+`viewfile` lets the user view any text file on the system. It allows for scrolling, it can cut, wrap or word-wrap lines and it has special features for files that may be growing while the user is looking at them, such as log files. `viewfile` is the log viewer in `example.lua`. Scrolling in the file is done by pressing the top or bottom one-third of the screen.
+
+#### `viewfile(filename, [wrapfunction], [logmode], [font], [xscale], [yscale], [ygap])`
+
+### arguments
+
+field | description
+:---- | :----------
+`filename` | *(string)* The name of the file to be viewed.
+`wrapfunction` | *(function)* This is a pointer to a function that can be used to wrap the lines in the file. This function is called for each line in the file, with the line as the first argument and the width of the screen in characters as the second. It must return a table with lines to be displayed, each maximally as long as the screen is wide. Here you can either pass a pointer to your own function (without brackets = pointer to function) or use on of the three built-in functions: `wrap`, `wordwrap` or `cut`. `wrap` simply wraps the lines around, breaking them wherever they hit the screen edge. `wordwrap` breaks at word boundaries, and `cut` just shows the first part of each line that is longer than the screen is wide. These three are functions in pineapple's namespace, so unlike your own function they need to be passed as `p.wordwrap`, etc. The default is `wrap`.
+`logmode` | *(boolean)* By default the file loads and the user sees the beginning of the file. In `logmode` some special things happen. First of all the user sees the end of the file. If the file grows, the screen scrolls along. Furthermore, if the user scrolls back, the foreground colour changes (to yellow, unless you change the `vf_past_fg` default) to indicate that the screen is no longer scrolling when the file grows. As soon as the user pages all the way down, the screen goes white again to indicate that the screen is now receiving any additions to the file.
+`font`, `xscale`, `yscale`, `ygap` | *(numbers)* Optional parameters determining how the display renders the text. Font is one of three system fonts (7x8, 8x8 or 8x12 pixels), times their x and y multiplication factors (xscale and yscale). ygap is the line spacing in pixels. `viewfile` by default uses FONT3 (8x12 pixels), with a gap of two pixels between the lines (`ygap`) to make things readable.
+
+### return values
+
+`viewfile` returns when the cancel button in the top right is pressed. It does not return any values.

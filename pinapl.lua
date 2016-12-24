@@ -1035,6 +1035,10 @@ function wrap(str, limit)
 	return lines
 end
 
+function cut(str, limit)
+	return { str:sub(1,limit) }
+end
+
 function rightpad(string, padchar, width)
 	while #string < width do
 		string = string .. padchar
