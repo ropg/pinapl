@@ -2,6 +2,8 @@
 
 >*A Lua library to let your code talk to a $29 serial touch-display module. And on top of that, another library to help you build simple apps with dialogs, listboxes, on-screen keyboard and more. Quickly and cheaply get a good-looking user interface on anything that has a serial port.*
 
+*written by Rop Gonggrijp*
+
 ## introduction
 
 I've always liked playing with minimal computers and networking. Running OpenWRT, a Linux distribution, on cheap wireless access points was a thing long before cheap and small computing platforms such as the Raspberry Pi, BeagleBone or C.H.I.P. came along. Even with these more powerful systems around, there are still applications where you might want to resort to Access Point-like systems. Maybe you need lots of Ethernet ports, maybe you're building something appliance-like that you'd like to use a super-small wireless module for, maybe you'd like to create something that runs a minimal amount of code for security reasons, or whatever other reason you have.
@@ -43,9 +45,9 @@ Important to note about the display is that the people that built it have their 
 
 I'm not presently using any of these features in `pinapl`, although I have implemented the functions related to it in the display library, so you can play with them if you like. Not using the SDK comes with some limitations that you need to be aware of:
 
-* No other fonts than the three that the display offers. They are a 7x8 (a.k.a. FONT1, referenced in the functions with the value zero), an 8x8 (FONT2, value one) and a 8x12 font (FONT3, value three).  The 8x8 font suffers from serious kerning issues, so you're left with two fonts. These are australians, so the fonts have no special characters, not even extended ASCII. So no accents, Umlaute, etc. etc. The fonts do allow stretching in both directions to make things more readable on such a small screen.
-* The display starts talking at 9600 bps. That's too slow. We up that by talking to it, but it would be cleaner if we could lock it to some higher rate permanently. You can do so with the SDK, if you want to use their Windows software.
-* No images. There is a function to transfer a small area of the screen serially and it works, but it's not very fast, having to transfer 2 bytes per pixel.
+* No other fonts than the three that the display offers. They are a 7x8 (a.k.a. FONT1, referenced in the functions with the value zero), an 8x8 (FONT2, value one) and a 8x12 font (FONT3, value two).  The 8x8 font suffers from serious kerning issues, so you're left with two fonts. The display is made by Australians, so the fonts have no special characters, not even extended ASCII. So no accents, Umlaute, etc. etc. The fonts do allow stretching in both directions to make things more readable on such a small screen.
+* The display starts talking at 9600 bps. That's too slow. We up that when we start talking to it, but it would be cleaner if we could lock it to some higher rate permanently. You can do so with the SDK, if you want to use their Windows software.
+* No images. There is a function to transfer a small area to the screen serially and it works, but it's not very fast, having to transfer 2 bytes per pixel.
 
 I haven't needed it yet, but depending on your application it may be worth using the SDK at least once to load a font with accents and/or change the default port speed.
 
@@ -97,7 +99,9 @@ The `gfx_Cls` command clears the screen, after which the `gfx_CircleFilled` func
 
 Speaking of 16-bit colours: I made the function that parses the arguments so that any numeric value can also be a special colour string, in the hexadecimal HTML format: `#RRGGBB`, where `#FF0000` would code for red. This then gets converted to the 16-bit "5-6-5" format the display uses.
 
-The commands and their parameters and return values can be found in the [PICASO Serial Command Set Reference Manual](http://www.4dsystems.com.au/productpages/PICASO/downloads/PICASO_serialcmdmanual_R_1_20.pdf) to be downloaded from the 4D-Systems website. If all you want to do is draw your own things to the display directly then you can stop reading this and just read that document. And even if you do want to use `pinapl`'s dialogs and menus, you are still free to use the commands from this underlying display library directly.
+The commands and their parameters and return values can be found in the [PICASO Serial Command Set Reference Manual](http://www.4dsystems.com.au/productpages/PICASO/downloads/PICASO_serialcmdmanual_R_1_20.pdf) to be downloaded from the 4D-Systems website. If all you want to do is draw your own things to the display directly then you can stop reading this and just read that document.
+
+It's important to remember that even if you use `pinapl`'s dialogs and menus, you are still free to use the commands from this underlying display library directly.
 
 > **Note:** I use 57600 bps because for some reason I cannot get 115200 bps to work between the Access Point and the display. It could be that one of the devices is too far off the actual speed for the two to talk to each other. I'll investigate later, but for now I use 57600 bps as the default higher speed.
 
@@ -192,10 +196,16 @@ while true do
 end
 ```
 
+### eh, wait, that was too fast...
+
+Don't worry if you don't understand everything that is going on in this example. The stuff with `os.execute` or `uci` is OpenWRT-specific magic that you can ignore if you're developing on something else. The reading of the logfile is a bit of a kludge, feel free to ignore.
+
+What is important of the above example is that you get a feel for what complete appliance-like functionality looks like in code. I hope it inspires you to use `pinapl` to make your own things.
+
 <br>
 ## Building appliances
 
-Typically, you would want this display to work when your device boots. And in many situations it will be the only user interface to the device. I've created the following OpenWRT-specific init script to start our example program using a shell wrapper. Assuming the files from the repository are at /root/pinapl, the following is saved as `/etc/init.d/pinapl`:
+Typically, you would want this display to work when your device boots. And in many situations it will be the only user interface to the device, so it better be running. I've created the following OpenWRT-specific init script to start our example program using a shell wrapper. Assuming the files from the repository are at /root/pinapl, the following is saved as `/etc/init.d/pinapl`:
 
 ```sh
 #!/bin/sh /etc/rc.common
@@ -237,10 +247,15 @@ while [ 1 == 1 ]; do
 done
 ```
 
-This second script gets executed with the name of the script to start and the GPIO pin as arguments. It will repeatedly call the interface code (in case of errors), resetting the display in between and logging all errors to the system log. All of this is just a quick hack, naturally you can stick files in better places and make a generally more pleasing setup. That said: this runs rock-solid. The display works after boot and the restarting isn't necessary: the code and the display run for days without exiting once.
+This second script gets executed with the name of the script to start and the GPIO pin as arguments. It will repeatedly call the interface code (in case of errors), resetting the display in-between and logging all errors to the system log. All of this is just a quick hack, naturally you can stick files in better places and make a generally more pleasing setup. That said: this runs rock-solid. The display works after boot and the restarting isn't necessary: the code and the display run for days without exiting once.
 
-Note that these examples assume the reset of the display is at GPIO pin 16. You may have to modify your startup script. Or maybe you're working with a completely different system. All of the above is just an example of how you could set this up.
+Note that these examples assume the reset of the display is at GPIO pin 16. You may have to modify your startup script. Or maybe you're working with a completely different system. Again: all of the above is just an example of how you could set this up.
 
+## thinking inside the box ...
+
+While I was writing `pinapl`, Till Butzmann made a pretty-looking enclosure for my tiny little AR-300M motherboard and the display (with the screw ears cut off) and 3D-printed it. This was done on a nice but still personal-grade 3D-printer, it can look even better on a professional one. Till is working on some final modifications and then the CAD-files for this enclosure will be published here. Let me know if you build something with `pinapl`, and I'll mention it here.
+
+![](images/box.jpg)
 
 <br><br>
 
@@ -539,7 +554,9 @@ field | description
 <br>
 ## screenmode
 
-Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets two variables, called `scr_w` and `scr_h` for the width and height of the display in pixels respectively. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty circles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles.
+Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets three variables. `scr_w` and `scr_h` contain the width and height of the display in pixels respectively, and `scr_mode` holds the current mode. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty circles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles, and the "Toggle orientation" options shows the use of `screenmode`.
+
+Note that if `scr_w` is 240, the pixels on the screen are referenced from 0 to 239 in the `4D-Picaso` functions. 
 
 #### `screenmode(mode)`
 
@@ -588,7 +605,7 @@ field | description
 :---- | :----------
 `filename` | *(string)* The name of the file to be viewed.
 `wrapfunction` | *(function)* This is a pointer to a function that can be used to wrap the lines in the file. This function is called for each line in the file, with the line as the first argument and the width of the screen in characters as the second. It must return a table with lines to be displayed, each maximally as long as the screen is wide. Here you can either pass a pointer to your own function (without brackets = pointer to function) or use on of the three built-in functions: `wrap`, `wordwrap` or `cut`. `wrap` simply wraps the lines around, breaking them wherever they hit the screen edge. `wordwrap` breaks at word boundaries, and `cut` just shows the first part of each line that is longer than the screen is wide. These three are functions in pineapple's namespace, so unlike your own function they need to be passed as `p.wordwrap`, etc. The default is `wrap`.
-`logmode` | *(boolean)* By default the file loads and the user sees the beginning of the file. In `logmode` some special things happen. First of all the user sees the end of the file. If the file grows, the screen scrolls along. Furthermore, if the user scrolls back, the foreground colour changes (to yellow, unless you change the `vf_past_fg` default) to indicate that the screen is no longer scrolling when the file grows. As soon as the user pages all the way down, the screen goes white again to indicate that the screen is now receiving any additions to the file.
+`logmode` | *(boolean)* By default the file loads and the user sees the beginning of the file. In `logmode` some special things happen. First of all the user sees the end of the file. If the file grows, the screen scrolls along. Furthermore, if the user scrolls back, the foreground colour changes (to yellow, unless you change the `vf_past_fg` default) to indicate that the screen is no longer scrolling when the file grows. As soon as the user pages all the way down, the letter become white again to indicate that the screen is now "locked to the bottom" as it were, scrolling when new lines are added to the file.
 `font`, `xscale`, `yscale`, `ygap` | *(numbers)* Optional parameters determining how the display renders the text. Font is one of three system fonts (7x8, 8x8 or 8x12 pixels), times their x and y multiplication factors (xscale and yscale). ygap is the line spacing in pixels. `viewfile` by default uses FONT3 (8x12 pixels), with a gap of two pixels between the lines (`ygap`) to make things readable.
 
 ### return values
