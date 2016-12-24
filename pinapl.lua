@@ -39,6 +39,7 @@ local ipairs = ipairs
 local type = type
 local io = io
 local unpack = unpack
+local table = table
 
 -- We need socket.gettime() to get sub-second precision for longpress in getkeypress
 --
@@ -835,10 +836,10 @@ function editfile(filename)
     while true do
     	local txt, ptr, longpress
 	    txt, longpress, ptr, offset = 
-	     listbox("Editing " .. basename(filename), t, nil, offset, extra_button, nil, 2)
+	     listbox("Editing " .. basename(filename), t, true, offset, extra_button, nil, 2)
 	    if ptr == nil then		-- Cancel pressed
 	    	return
-		elseif ptr == 0 then	-- extra_button ("Save")
+		elseif ptr == 0 then	-- extra_button ("Save") pressed
 			-- Save the file
 	    	local file, err = io.open(filename, "w")
 			if not file then
@@ -850,13 +851,41 @@ function editfile(filename)
 	    		file:write(value .. "\n")
 	    	end
 	    	file:close()
-	    	return
+	    	return true
 	    else					-- A line is selected
-	    	local tmp = input(basename(filename) .. " at line #" .. ptr, t[ptr])
-	    	if tmp then
-	    		t[ptr] = tmp
-	    		extra_button = "Save"
-	    	end
+			if longpress then
+				-- show line context menu
+				linecontext = listbox("#" .. ptr .. ": " .. t[ptr], 
+					{"delete this line",
+					"insert blank line before",
+					"insert blank line after"})
+				if linecontext == "delete this line" then
+					local fragment = t[ptr]
+					if #fragment > 30 then fragment = fragment:sub(1,30) .. "..." end
+					if dialog("Delete line?", "About to delete line #" .. ptr .. ": " 
+											.. fragment, {"Yes", "No"}) == "Yes" then
+						table.remove(t, ptr)
+						extra_button = "Save"
+					end
+				elseif linecontext == "insert blank line before" then
+					table.insert(t, ptr, "")
+					extra_button = "Save"
+				elseif linecontext == "insert blank line after" then
+					table.insert(t, ptr + 1, "")
+					extra_button = "Save"
+				end			
+			else
+				local tmp, split = input(basename(filename) .. " at #" .. ptr, t[ptr])
+				if tmp then
+					if not split then
+						t[ptr] = tmp
+					else
+						t[ptr] = tmp:sub(1, split - 1)
+						table.insert(t, ptr + 1, tmp:sub(split))
+					end
+					extra_button = "Save"
+				end
+			end
 	    end
 	end
 end

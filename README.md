@@ -8,7 +8,7 @@ I've always liked playing with minimal computers and networking. Running OpenWRT
 
 But suppose you want to build something with its own user interface. Something completely minimal. Say all you want is to enter an IP-number or pick a wifi network to use and enter the WPA key. Now you're almost forced to use a Raspberry Pi with a special display HAT, or a Beaglebone Black with a display cape, or something similar. And these displays are wonderful. If you have the time to play around, you can make these small displays do amazing things. The displays are connected to the system using SPI, so they are fast and they have a framebuffer interface so you can even use a framebuffer web-browser or run Xwindows on them. But not every system gives you easy access to an SPI-port, you may have to compile kernel modules of varying code quality, the touch screen might have a separate port, etc, etc.
 
-This project is nothing like that. Here we present an extremely easy way to create decent-looking functionality using a touch-screen module that has a bit of built-in intelligence and hooks up to anything that has 5 volts and a 5V or 3.3V level serial port available.
+This project is nothing like that. Here we present an extremely easy way to create decent-looking functionality using a touch-screen module that has a bit of built-in intelligence and hooks up to anything that has 5 volts and a 5V or 3.3V level serial port available. It uses Lua, a very lightweight programming language. The Lua interpreter, the libraries and the code for the example from the video all together use up around 200 kilobytes of storage on my OpenWRT system.
 
 [![](images/example-lua.jpg)](http://www.youtube.com/watch?v=k3sRRXSDI7Y)
 
@@ -357,6 +357,32 @@ field | description
 
 
 <br>
+## editfile
+
+```lua
+p.editfile("/etc/config/dhcp")
+```
+
+![](images/editfile.jpg)
+
+`editfile` is a self-contained file editor. It will show the lines from the file you are editing (using  [`listbox`](#listbox) internally) and allows editing any line in the file (using [`input'](#input) internally). If the user presses and holds a line, a context menu is shown. It allows for the deletion of that line as well as the insertion of a blank line before or after that line. If the user presses shift-Done while editing a line, the line is split at the cursor.
+
+You can see a demonstration of the editor if you watch the video showing `example.lua` at the top of this page.
+
+### arguments
+
+field | description
+:---- | :----------
+`filename` | The name of the file to edit. This must be a text file, or unpredictable things might happen. If `nil` is passed instead, `editfile` returns `nil`, which allows for the `editfile (browsefile() )` construct from `example.lua`. 
+
+### return values
+
+field | description
+:---- | :----------
+`edited` | `true` if the file was saved, `nil` otherwise. 
+
+
+<br>
 ## getkeypress
 
 This is the routine where your applications are going to be spening most of their time. Almost all the other functions in this library eventually either block on a call to `getkeypress` (waiting for a key), or they are polling it in `do_not_block` mode in a loop. You can call it yourself too. You generally provide it with a list of rectangles and what you want getkeypress to return if they are pressed. (Or just pass `nil` as buttons to make the whole screen a button. `getkeypress` handles putting the display to sleep after `p.standbytimer` seconds.
@@ -437,7 +463,7 @@ The shift key is sticky, meaning that it is pressed before and not during the ke
 field | description
 :---- | :----------
 `header` | *(string)* Text printed in top-left of screen.
-`defaulttext` | *(string)* The text that is already theer when the user starts entering text. The cursor is placed after the last character of the defaulttext and the text is scrolled off the screen on the left if there is more than fits the display.
+`defaulttext` | *(string)* The text that is already there when the user starts entering text. The cursor is placed after the last character of the defaulttext and the text is scrolled off the screen on the left if there is more than fits the display.
 `keyboard` | *(string)* selects the keyboard. `pinapl` comes with a number of keyboard layouts, called `Normal`, `Sym`, `Num`, `Vertical` and `Vert_Sym`. If you specify a keyboard by name here, `input` will start with that keyboard. If you specify no keyboard, `input` will will pick either `Normal` or `Vertical`, depending on the orientation of the screen (see `screenmode`). Also see the text below on how to add a custom keyboard layout.
 `maxlen` | *(number)* The maximum number of characters the user can enter. If this maximum is reached, the cursor turns red to indicate that the limit has been reached and no futher keys (except backspace) are processed.
 `fixed_scale` | *(number)* The horizontal stretch factor of the text that is being typed. Normally `input` figures this out for itself, printing a text nice and big if it's short enough, and then making it a step more condensed if it no longer fits the screen. Only the values `1` and `2` make much sense here, to lock `input` it to the small and the large size respectively.
@@ -452,7 +478,7 @@ field | description
 
 ### Defining your own keyboards 
 
-You can define your own keyboards for use with `input`. If you look at the code in `pinapl.lua`, you'll see the keyboard layouts in the beginning. You can add or modify a keyboard in your own code by adding a keyboard definition anywhere after the `p = require("pinapl") statement`. The numeric keypad `pinapl` provides has the phone layout (with the `1` in the left top). Say you want a numeric keyboard in calculator layout (with the `7` in the left top). In that case, we would just have the following code after that `require` statement:
+You can define your own keyboards for use with `input`. If you look at the code in `pinapl.lua`, you'll see the keyboard layouts in the beginning. You can add or modify a keyboard in your own code by adding a keyboard definition anywhere after the `p = require("pinapl")` statement. The numeric keypad `pinapl` provides has the phone layout (with the `1` in the left top). Say you want a numeric keyboard in calculator layout (with the `7` in the left top). In that case, we would just have the following code after that `require` statement:
 
 ```lua
 p.keyboards['Calc'] = {
@@ -513,7 +539,7 @@ field | description
 <br>
 ## screenmode
 
-Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets two variables, called `scr_w` and `scr_h` for the width and height of the display in pixels respectively. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty cicles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles.
+Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets two variables, called `scr_w` and `scr_h` for the width and height of the display in pixels respectively. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty circles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles.
 
 #### `screenmode(mode)`
 
