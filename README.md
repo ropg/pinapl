@@ -250,7 +250,7 @@ done
 
 This second script gets executed with the name of the script to start and the GPIO pin as arguments. It will repeatedly call the interface code (in case of errors), resetting the display in-between and logging all errors to the system log. All of this is just a quick hack, naturally you can stick files in better places and make a more generic and generally more pleasing setup. That said: this runs rock-solid. The display works after boot and the restarting isn't necessary: the code and the display run for days without crashing once.
 
-Note that these examples assume the reset of the display is at GPIO pin 16. You may have to modify your startup script. Or maybe you're working with a completely different system. Again: all of the above is just an example of how you could set this up to make a simple device with its won user interface.
+Note that these examples assume the reset of the display is at GPIO pin 16. You may have to modify your startup script. Or maybe you're working with a completely different system. Again: all of the above is just an example of how you could set things up to make a simple device with its own user interface.
 
 ## thinking inside the box ...
 
