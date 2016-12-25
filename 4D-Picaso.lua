@@ -91,13 +91,13 @@ function cmd_literal(command, ret_words, send)
 			-- Sometimes the display gets borked. It needs to be unborked by sending
 			-- 0x0200 . It's not in the manual. I found it by scanning for commands
 			-- that send ACK in borked state.
-			if data:byte() == 21 then
+			if data and data:byte() == 21 then
 				port:read(100, 10, 1)
 				port:write(hex("0200"))
 				port:read(100, 10, 1)
 			end
 			
-	 	until data:byte() == 6
+	 	until data and data:byte() == 6
 	 	
 		err, data, size = port:read(ret_words * 2)
 		if ret_words > 0 then
@@ -159,7 +159,7 @@ end
 
 -- Returns the numeric value for a string in argparse() format (see above) 
 function b2n(s)
-	assert (#s == 2, "invalid input to b2n()")
+	if #s ~=2 then return 0 end
 	return string.byte(s,1) * 256 + string.byte(s,2)
 end
 
