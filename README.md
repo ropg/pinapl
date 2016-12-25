@@ -124,7 +124,7 @@ p = require("pinapl")		-- This is the part that makes the dialogs, menus, etc
 
 p.standbytimer = 180		-- Go to sleep if nothing pressed for this many seconds
 
-p.init(d)						-- Initialize the port and the display
+p.init(d)					-- Initialize the port and the display
 
 while true do
 
@@ -166,7 +166,7 @@ while true do
 		p.editfile ( p.browsefile() )
 
 	elseif selected == "See the log" then
-		-- This is done this way because Lua's io.popen() locks, even on read(0)
+		-- This is done this way because Lua's io.popen() blocks, even on read(0)
 		os.execute("/sbin/logread >/tmp/logfile")
 		os.execute("/sbin/logread -f >>/tmp/logfile &")
 		p.viewfile("/tmp/logfile", p.wordwrap, true)
@@ -177,6 +177,8 @@ while true do
 		if p.dialog("Reboot?", "You are about to reboot. Are you sure?",
 													{"Yes", "No"}) == "Yes" then
 			os.execute("/sbin/reboot")
+			p.dialog(nil, "Rebooting now...", nil, nil, 2, 3)
+			while true do end		-- loop until reboot 
 		end
 
 	elseif selected == "Pretty circles" then
