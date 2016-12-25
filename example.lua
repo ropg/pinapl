@@ -58,6 +58,8 @@ while true do
 		if p.dialog("Reboot?", "You are about to reboot. Are you sure?",
 													{"Yes", "No"}) == "Yes" then
 			os.execute("/sbin/reboot")
+			p.dialog(nil, "Rebooting now...", nil, nil, 2, 3)
+			while true do end		-- loop until reboot 
 		end
 
 	elseif selected == "Pretty circles" then
