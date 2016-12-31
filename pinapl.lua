@@ -1036,23 +1036,25 @@ function drawbutton(x, y, bgcol, fgcol, font, xscale, yscale, text)
 end
 
 function wordwrap(str, limit)
-	local indent = indent or ""
-	local Lines, here, limit = {}, 1, limit or 72
-	-- Put the first word of the string in the first index of the table.
-	Lines[1] = string.sub(str,1,str:find("(%s+)()(%S+)()")-1)  
-
-	str:gsub("(%s+)()(%S+)()",
-        function(sp, st, word, fi)  -- Function gets called once for every space found.
-        	if fi-here > limit then
-        		here = st
-        		-- If at the end of a line, start a new table index...
-                Lines[#Lines+1] = word
-			else 
-				-- ... otherwise add to the current table index.
-				Lines[#Lines] = Lines[#Lines] .. " " .. word
-			end  
-        end)
-	return Lines
+	local lines = {}
+	local done = false
+	repeat
+		for n = limit + 1, 10, -1 do
+			if str:sub(n,n) == " " then
+				lines[#lines + 1] = str:sub(1, n - 1)
+				str = str:sub(n + 1)
+				done = true
+				break
+			end
+		end
+		if not done then
+			lines[#lines + 1] = str:sub(1, limit)
+			str = str:sub(limit + 1)
+		end
+		done = false
+	until #str <= limit
+	if #str > 0 then lines[#lines + 1] = str end
+	return lines
 end
 
 function wrap(str, limit)
