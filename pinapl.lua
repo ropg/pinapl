@@ -495,7 +495,7 @@ function dialog(header, text, buttons, font, xscale, yscale, ygap)
 	
 			w, h = drawbutton(x,y,but_bg,but_fg,but_font,but_xscale,but_yscale,buttons[n])
 		
-			buts[#buts + 1] = {x, y, x + w, y + h, buttons[n]}
+			table.insert(buts, {x, y, x + w, y + h, buttons[n]})
 		
 		end
 	
@@ -562,21 +562,21 @@ function listbox(header, options, longpress_time, offset,
 	local cur_fg = ""
 	
 	local buts = {}
-	buts[#buts + 1] = {0, box_top, box_right, scr_h - 1, 'inwindow'}
+	table.insert(buts, {0, box_top, box_right, scr_h - 1, 'inwindow'})
 
 	if #options > screenrows then	
-		buts[#buts + 1] = {b_left, b_up_y, b_left + b_width, b_up_y + b_height, 'Up'}
-		buts[#buts + 1] = {b_left, b_dn_y, b_left + b_width, b_dn_y + b_height, 'Down'}
+		table.insert(buts, {b_left, b_up_y, b_left + b_width, b_up_y + b_height, 'Up'})
+		table.insert(buts, {b_left, b_dn_y, b_left + b_width, b_dn_y + b_height, 'Down'})
 	end
 
 	if extra_button then
-		buts[#buts + 1] = {b_left, b_ex_y, b_left + b_width, b_ex_y + b_height,
-																		extra_button}
+		table.insert(buts, {b_left, b_ex_y, b_left + b_width, b_ex_y + b_height,
+																		extra_button})
 	end
 	
 	if not no_cancel then
 		drawcancelbutton()
-		buts[#buts + 1] = {scr_w - 20, 0, scr_w - 1, 20, 'Cancel'}
+		table.insert(buts, {scr_w - 20, 0, scr_w - 1, 20, 'Cancel'})
 	end
 
 	while true do
@@ -673,9 +673,9 @@ function browsefile(header, dir, longpress_time, capture, extra_button)
 		for filename in ls:lines() do
 			-- Make directries blue in the listbox
 			if filename:sub(#filename) == "/" then
-				d[#d + 1] = {"#0000FF", filename}
+				table.insert(d, {"#0000FF", filename})
 			else 
-				d[#d + 1] = filename
+				table.insert(d, filename)
 			end
 		end
 		ls:close()
@@ -731,10 +731,10 @@ function viewfile(filename, wrapfunction, logmode, font, xscale, yscale, ygap)
 	d.txt_BGcolour(vf_bg)
 
 	local buts = {}
-	buts[#buts + 1] = {scr_w - 20, 0, scr_w - 1, 20, 'Cancel'}
-	buts[#buts + 1] = {0, 0, scr_w - 20, scr_h / 3, 'Up'}
-	buts[#buts + 1] = {0, 2 * (scr_h / 3), scr_w - 20, scr_h - 1, 'Down'}
-		
+	table.insert(buts, {scr_w - 20, 0, scr_w - 1, 20, 'Cancel'})
+	table.insert(buts, {0, 0, scr_w - 20, scr_h / 3, 'Up'})
+	table.insert(buts, {0, 2 * (scr_h / 3), scr_w - 20, scr_h - 1, 'Down'})
+	
 	local lines = {}
 	local redraw = nil
 	
@@ -755,7 +755,7 @@ function viewfile(filename, wrapfunction, logmode, font, xscale, yscale, ygap)
 			wrappedlines = wrapfunction(line, screencols)		
 			if #wrappedlines > 0 then
 				for n = 1, #wrappedlines do
-					lines[#lines + 1] = wrappedlines[n]:sub(1, screencols)
+					table.insert(lines, wrappedlines[n]:sub(1, screencols))
 				end	
 				if liveview then
 					bottomline = #lines
@@ -830,7 +830,7 @@ function editfile(filename)
     end
     
     for line in file:lines() do
-        t[#t + 1] = line
+        table.insert (t, line)
     end
     file:close()
     while true do
@@ -1014,7 +1014,7 @@ function drawkeyboard(keyboard)
 				w, h = drawbutton(x, y, but_bg, but_fg, 2, wscale, 2, text)
 				
 				-- Register button in key array to be returned
-				buts[#buts + 1] = {x, y, x + w, y + h, key}
+				table.insert(buts, {x, y, x + w, y + h, key})
 
 				x = x + w
 			end
@@ -1022,8 +1022,8 @@ function drawkeyboard(keyboard)
 		y = y + h
 	end
 	
-	buts[#buts + 1] = {0,  hdr_height, scr_w - 1, i_kbd_y - 5, 'inwindow'}
-	buts[#buts + 1] = {scr_w - 20, 0, scr_w - 1, 20, 'Cancel'}
+	table.insert(buts, {0,  hdr_height, scr_w - 1, i_kbd_y - 5, 'inwindow'})
+	table.insert(buts, {scr_w - 20, 0, scr_w - 1, 20, 'Cancel'})
 	
 	return buts, shiftkeydata
 end
@@ -1041,33 +1041,33 @@ function wordwrap(str, limit)
 	repeat
 		for n = limit + 1, 10, -1 do
 			if str:sub(n,n) == " " then
-				lines[#lines + 1] = str:sub(1, n - 1)
+				table.insert(lines, str:sub(1, n - 1))
 				str = str:sub(n + 1)
 				done = true
 				break
 			end
 		end
 		if not done then
-			lines[#lines + 1] = str:sub(1, limit)
+			table.insert(lines, str:sub(1, limit))
 			str = str:sub(limit + 1)
 		end
 		done = false
 	until #str <= limit
-	if #str > 0 then lines[#lines + 1] = str end
+	if #str > 0 then table.insert(lines, str) end
 	return lines
 end
 
 function wrap(str, limit)
 	local lines = {}
 	repeat
-		lines[#lines+1] = str:sub(1, limit)
-		str = str:sub(limit+1)
+		table.insert(lines, str:sub(1, limit))
+		str = str:sub(limit + 1)
 	until str == ""
 	return lines
 end
 
 function cut(str, limit)
-	return { str:sub(1,limit) }
+	return { str:sub(1, limit) }
 end
 
 function rightpad(string, padchar, width)
