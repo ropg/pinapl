@@ -555,7 +555,7 @@ field | description
 <br>
 ## screenmode
 
-Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets three variables. `scr_w` and `scr_h` contain the width and height of the display in pixels respectively, and `scr_mode` holds the current mode. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty circles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles, and the "Toggle orientation" options shows the use of `screenmode`.
+Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets three variables. `scr_w` and `scr_h` contain the width and height of the display in pixels respectively, and `scr_mode` holds the current mode. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty circles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles, and the "Toggle orientation" option shows the use of `screenmode`.
 
 Note that if `scr_w` is 240, the pixels on the screen are referenced from 0 to 239 in the `4D-Picaso` functions. 
 
