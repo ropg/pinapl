@@ -38,8 +38,7 @@ while true do
 				p.dialog("Success", 'Hostname changed to "' .. hostname .. '"', {"OK"})
 			-- Otherwise show an error dialog
 			else
-				p.dialog("Error", '"' .. hostname .. '" is not a valid hostname. \
-				  A hostname can only contain letters, numbers and hyphens (-)', {"OK"})
+				p.dialog("Error", '"' .. hostname .. '" not valid. A hostname can only contain letters, numbers and hyphens (-)', {"OK"})
 			end
 		end
 
