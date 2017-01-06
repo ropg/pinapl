@@ -320,7 +320,7 @@ field | description
 
 field | description
 :---- | :----------
-`path` | *(string or `nil`)* This will be `nil` only if the cancel button at the top right is pressed. Note that [`browsefile`](#browsefile] can only return a directory name (with trailing slash) in conjunction with `longpress` or  `extra_button`. Normally it would simply iterate into this directory and not return.
+`path` | *(string or `nil`)* This will be `nil` only if the cancel button at the top right is pressed. Note that [`browsefile`](#browsefile) can only return a directory name (with trailing slash) in conjunction with `longpress` or  `extra_button`. Normally it would simply iterate into this directory and not return.
 `longpress` | *(boolean)*
 `extra_button` | *(boolean)*
 
@@ -328,7 +328,7 @@ field | description
 <br>
 ##clearscreen
 
-`clearscreen` does what it says on the box. It does not reset the various parameters (such as line spacing, underline, etc, etc) that the `gfx_Cls` function in the underlying display library resets. It simply draws a rectangle.
+`clearscreen` does what it says on the box. It does not reset the various parameters (such as line spacing, underline, etc, etc) that the `gfx_Cls` function in the underlying display library resets. It simply draws a full-screen rectangle of the specified colour.
 
 ####`clearscreen ([colour])`
 
@@ -441,7 +441,7 @@ The first line makes the functions of the display library available in the names
 
 The second line does the same for the higher-level functions in `pinapl`, as `p`. Now that the defaults are loaded, we can overwrite some of them. You'll find all the defaults you can tinker with by just looking at the code in `pinapl.lua`. In this case we set the standby-timer to 3 minutes, and we make the screen start in a vertical orientation. (See [`screenmode`](#screenmode))
 
-We then start talking to the display, turn on it's touch-screen, set it to the desired speed, put it in the right orientation and so on, by running `init`. Init needs to be told how to talkj to the display, so we're passing it a pointer to that as the first argument. Then we use `/dev/cua0` as the serial port on our end, we start at the factory setting of 9600 bps and then take it to 19200 bps.
+We then start talking to the display, turn on it's touch-screen, set it to the desired speed, put it in the right orientation and so on, by running `init`. Init needs to be told how to talk to the display, so we're passing it a pointer to that as the first argument. Then we use `/dev/cua0` as the serial port on our end, we start at the factory setting of 9600 bps and then take it to 19200 bps.
 
 ####`init(4D-picaso, [port], [initial_speed], [working_speed])`
 
