@@ -137,13 +137,13 @@ end
 -- strings. Numbers are converted to two bytes, strings are null-terminated, 
 -- colour codes (e.g. "#FF0000" for red) are sent as numbers. 
 function argparse(...)
-	s = ""
+	local s = ""
 	for i, v in ipairs{...} do
 		if type(v) == "number" then
 			s = s .. n2b(v)
 		elseif type(v) == "string" then
 			if #v == 7 and v:match("#%x%x%x%x%x%x") then
-				s = s .. argparse(colour(v))
+				s = s .. n2b(colour(v))
 			else
 				s = s .. v .. hex("00")
 			end
