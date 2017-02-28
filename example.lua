@@ -71,8 +71,9 @@ while true do
 	
 	elseif selected == "Toggle orientation" then
 		-- scr_mode is the global variable containing the current mode
-		if p.scr_mode == 0 then p.screenmode(2) else p.screenmode(0) end
-		
+		local newmode = p.scr_mode + 1
+		if newmode == 4 then newmode = 0 end
+		p.screenmode(newmode)
 	end
 
 end
