@@ -441,7 +441,9 @@ The first line makes the functions of the display library available in the names
 
 The second line does the same for the higher-level functions in `pinapl`, as `p`. Now that the defaults are loaded, we can overwrite some of them. You'll find all the defaults you can tinker with by just looking at the code in `pinapl.lua`. In this case we set the standby-timer to 3 minutes, and we make the screen start in a vertical orientation. (See [`screenmode`](#screenmode))
 
-We then start talking to the display, turn on it's touch-screen, set it to the desired speed, put it in the right orientation and so on, by running `init`. Init needs to be told how to talk to the display, so we're passing it a pointer to that as the first argument. Then we use `/dev/cua0` as the serial port on our end, we start at the factory setting of 9600 bps and then take it to 19200 bps.
+We then start talking to the display, turn on it's touch-screen, set it to the desired speed, put it in the right orientation and so on, by running `init`. Init needs to be told where the library is that does the actual talking to the display, so we're passing it a pointer to that as the first argument. Then we use `/dev/cua0` as the serial port on our end, we start at the factory setting of 9600 bps and then take it to 19200 bps.
+
+Note: if the display is set at a higher speed and init is called again, it will simply ignore that there's no display at 9600 bps and continue at the higher speed. I.e.: it will work if you call init again without resetting the display.
 
 ####`init(4D-picaso, [port], [initial_speed], [working_speed])`
 
@@ -451,8 +453,8 @@ field | description
 :---- | :----------
 `4D-picaso` | *(namespace)* Pointer to the namespace for the `4D-Picaso` library. 
 `port` | *(string)* The serial device on your end that is used to talk to the display. Defaults to `/dev/ttyS0`.
-`initial_speed` | *(number)* The speed that the display expects when it is powered on. Factory setting for the display, and default for `init`, is 9600 bps. This can be changed on the display if you use the 4D-Systems proprietary Windows software.
-`working_speed` | *(number)* This is the speed the display will be set to first thing as `init` starts talking to it. Defaults to 57600 because I had trouble getting it to work at 115200 with my particular system, but I haven't really investigated whether this is a problem with my system or the display. 57600 is fast enough, 9600 will noticeably slow things down.
+`initial_speed` | *(number)* The speed that the display expects when it is powered on. Factory setting for the display, and default for `init`, is 9600 bps. This can be changed in the flash memory on the display if you use the 4D-Systems proprietary Windows software.
+`working_speed` | *(number)* This is the speed the display will be set to first thing as `init` starts talking to it. Defaults to 115200. On some systems some actual serial speeds may be too far off. I had trouble getting it to work at 115200 with my Access Point, so I had to go down to 57600.
 
 ### return values
 

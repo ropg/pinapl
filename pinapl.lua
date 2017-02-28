@@ -153,7 +153,7 @@ function init(display, port, initial_speed, working_speed)
 	d = display
 	port = port or "/dev/ttyS0"
 	initial_speed = initial_speed or 9600
-	working_speed = working_speed or 57600
+	working_speed = working_speed or 115200
 	d.init(port, initial_speed)
 	if working_speed ~= initial_speed then d.setbaudWait(working_speed) end
 	d.touch_Set(0)						-- Turn on touch screen
