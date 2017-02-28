@@ -441,7 +441,7 @@ The first line makes the functions of the display library available in the names
 
 The second line does the same for the higher-level functions in `pinapl`, as `p`. Now that the defaults are loaded, we can overwrite some of them. You'll find all the defaults you can tinker with by just looking at the code in `pinapl.lua`. In this case we set the standby-timer to 3 minutes, and we make the screen start in a vertical orientation. (See [`screenmode`](#screenmode))
 
-We then start talking to the display, turn on it's touch-screen, set it to the desired speed, put it in the right orientation and so on, by running `init`. Init needs to be told where the library is that does the actual talking to the display, so we're passing it a pointer to that as the first argument. Then we use `/dev/cua0` as the serial port on our end, we start at the factory setting of 9600 bps and then take it to 19200 bps.
+We then start talking to the display, set it to the desired speed, turn on its touch-screen, put it in the right orientation and so on, by running `init`. Init needs to be told where the library is that does the actual talking to the display, so we're passing it a pointer to that as the first argument. Then we use `/dev/cua0` as the serial port on our end, we start at the factory setting of 9600 bps and then take it to 19200 bps.
 
 Note: if the display is set at a higher speed and init is called again, it will simply ignore that there's no display at 9600 bps and continue at the higher speed. I.e.: it will work if you call init again without resetting the display.
 
