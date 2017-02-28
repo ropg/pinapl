@@ -1039,7 +1039,7 @@ function wordwrap(str, limit)
 	local lines = {}
 	local done = false
 	repeat
-		for n = limit + 1, 10, -1 do
+		for n = limit + 1, 1, -1 do
 			if str:sub(n,n) == " " then
 				table.insert(lines, str:sub(1, n - 1))
 				str = str:sub(n + 1)
