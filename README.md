@@ -53,7 +53,7 @@ It all works fine for me as is, but depending on your application it may be wort
 
 ### other displays?
 
-The code for this project is specific to the serial protocol spoken by this type of display. 4D-Systems does make a number of other displays that use the same "Picaso" chip and speak the same protocol. They also have displays that use the "Diablo" chip, but which seem to speak the same or at least a very similar protocol. The other "Picaso" displays are also 320x240 but they're slightly bigger, so you might want to play with them if you have really large fingers. No idea if the "Diablo" displays work with my code, and I haven't really optimized for larger resolutions. My code does ask the display how big it is and sizes objects accordingly, so things might work somewhat. Your mileage may vary.
+The code for this project is specific to the serial protocol spoken by this type of display. 4D-Systems does make a number of other displays that use the same "Picaso" chip and speak the same protocol. They also have displays that use the "Diablo" chip, but which seem to speak the same or at least a very similar protocol. The other "Picaso" displays are also 320x240 but they're slightly bigger, so you might want to play with them if you have really large fingers. No idea if the "Diablo" displays work with my code, and I haven't really optimised for larger resolutions. My code does ask the display how big it is and sizes objects accordingly, so things might work somewhat. Your mileage may vary.
 
 Nothing says there can't be a simple abstraction layer built between the code that talks to the display and the code that makes pretty dialogs and menus. That way this could talk to other displays that speak different protocols. If you know of really cheap touch-displays that you would like this to work with, please let me know. 
 
@@ -79,7 +79,7 @@ So, let's assume you have Lua installed on an OpenWRT system (`opkg install lua`
 
 ### let's go!
 
-Now we're ready to make things happen on the display. Create a file `cicles.lua` and paste this in it. 
+Now we're ready to make things happen on the display. Create a file `circles.lua` and paste this in it. 
 
 ```lua
 #!/usr/bin/lua
@@ -112,7 +112,7 @@ Drawing things directly to the display is fun, but writing anything useful can b
 
 getting started with `pinapl` is as easy as using the display library directly. All you need to do now is `require` both libraries and call `init` from `pinapl`. You'll see how that's done in the example below.
 
-### not really a dependecy: `luasocket` still nice to have
+### not really a dependency: `luasocket` still nice to have
 
 `pinapl` doesn't depend on anything but the `4D-picaso` library we talked about earlier (and through it, on `lua-rs232`). But if it finds the TCP/IP socket library available, the `socket.gettime()` function is used instead of `os.time()`. The latter has a one second precision, where the socket library's function is much more precise (to 1/100's of a second). Precise time is useful, for instance to help detect how long a user is pressing a key. Without it, you may have to wait anywhere between 1 and 2 seconds for a context menu. On OpenWRT install the socket library with `opkg install luasocket`.
 
@@ -128,7 +128,7 @@ p = require("pinapl")		-- This is the part that makes the dialogs, menus, etc
 
 p.standbytimer = 180		-- Go to sleep if nothing pressed for this many seconds
 
-p.init(d)					-- Initialize the port and the display
+p.init(d)					-- Initialise the port and the display
 
 while true do
 
@@ -204,7 +204,7 @@ end
 
 ### eh, wait, that was too fast...
 
-Don't worry if you don't understand everything that is going on in this example in detail. The stuff with `os.execute` and/or `uci` is OpenWRT-specific, you can ignore it if you're developing on something else or are just trying to unserstand how `pinapl` might help you. Also the code to show the logfile is a bit involved, feel free to ignore that.
+Don't worry if you don't understand everything that is going on in this example in detail. The stuff with `os.execute` and/or `uci` is OpenWRT-specific, you can ignore it if you're developing on something else or are just trying to understand how `pinapl` might help you. Also the code to show the logfile is a bit involved, feel free to ignore that.
 
 What is important in the above example is that you get a feel for what complete appliance-like functionality looks like in code. I hope it inspires you to make your own things. Check the [function documentation](#pinapl-function-documentation) for a complete description of all the functions.
 
@@ -248,7 +248,7 @@ while [ 1 == 1 ]; do
 done
 ```
 
-This second script gets executed with the name of the script to start and the GPIO pin as arguments. It will repeatedly call the interface code (in case of errors), resetting the display in-between and logging all errors to the system log. All of this is just a quick hack, naturally you can stick files in better places and make a more generic and generally more pleasing setup. That said: this runs rock-solid. The display works after boot and the restarting isn't necessary: the code and the display run for days without crashing once.
+This second script gets executed by the first one. It will repeatedly call the interface code (so that it gets restarted in case of errors), resetting the display in-between and logging all errors to the system log. All of this is just a quick hack, naturally you can stick files in better places and make a more generic and generally more pleasing setup. That said: this runs rock-solid. The display works after boot and the restarting isn't necessary: the code and the display run for days without crashing once.
 
 Note that these examples assume the reset of the display is at GPIO pin 16. You may have to modify your startup script. Or maybe you're working with a completely different system. Again: all of the above is just an example of how you could set things up to make a simple device with its own user interface.
 
@@ -298,7 +298,7 @@ field | description
 
 ![](images/browsefile.jpg)
 
-`browsefile` presents a file and directory picker. You might notice by its looks that it that uses `listbox` to display the files and directories internallly. It allows the user to select a file (or a directory if used with `longpress` or `extra_button`).
+`browsefile` presents a file and directory picker. You might notice by its looks that it that uses `listbox` to display the files and directories internally. It allows the user to select a file (or a directory if used with `longpress` or `extra_button`).
 
 Because `browsefile` returns `nil` if cancel is pressed, and `editfile` defaults to "/" and returns nil if called without arguments, the construction `editfile( browsefile() )` (as seen in `example.lua`) works. However, one might like to use the longpress feature to make context menus, maybe use an `extra_button` called "New" to create files/directories, etc, etc.
 
@@ -346,7 +346,7 @@ field | description
 <br>
 ## dialog
 
-`dialog` presents a dialog screen. It word-wraps and centers what's in `text`, and prints it above the buttons. Dialog screens do not have a cancel button in the top right: if you want users to be able to cancel, just mark one of the buttons accordingly.
+`dialog` presents a dialog screen. It word-wraps and centres what's in `text`, and prints it above the buttons. Dialog screens do not have a cancel button in the top right: if you want users to be able to cancel, just mark one of the buttons accordingly.
 
 ```lua
 if p.dialog("You've got a problem...", "Something bad happened. Continue?", {"Yes", "No"}) == "Yes" then
@@ -361,8 +361,8 @@ if p.dialog("You've got a problem...", "Something bad happened. Continue?", {"Ye
 field | description
 :---- | :----------
 `header` | *(string)* Text printed in top-left of screen.
-`text` | *(string)* The text to be printed in center screen. Text is word-wrapped and both horizontally and vertically centered.
-`buttons` | *(table)* A table of strings to be printed on buttons underneath the text. The screen is divided into as many columns as there are buttons, and each button is centered within its column. No special measures are taken in case this doesn't fit, so take care your buttons don't overlap. Make sure to also check with vertical screen if the user can switch orientation. If nil is passed in buttons, dialog renders the header and text and then returns immediately.
+`text` | *(string)* The text to be printed in center screen. Text is word-wrapped and both horizontally and vertically centred.
+`buttons` | *(table)* A table of strings to be printed on buttons underneath the text. The screen is divided into as many columns as there are buttons, and each button is centred within its column. No special measures are taken in case this doesn't fit, so take care your buttons don't overlap. Make sure to also check with vertical screen if the user can switch orientation. If nil is passed in buttons, dialog renders the header and text and then returns immediately.
 `font`, `xscale`, `yscale`, `ygap` | *(number)* Optional parameters determining how the display renders the text. Font is one of three system fonts (7x8, 8x8 or 8x12 pixels), times their x and y multiplication factors (xscale and yscale). ygap is the line spacing in pixels. All of these only used for the text itself, not for the header and the buttons, those follow the system defaults.
 
 ### return values
@@ -401,7 +401,7 @@ field | description
 <br>
 ## getkeypress
 
-This is the routine where your applications are going to be spening most of their time. Almost all the other functions in this library eventually either block on a call to `getkeypress` (waiting for a key), or they are polling it in `do_not_block` mode in a loop. You can call it yourself too. You generally provide it with a list of rectangles and what you want getkeypress to return if they are pressed. (Or just pass `nil` as buttons to make the whole screen a button. `getkeypress` handles putting the display to sleep after `p.standbytimer` seconds.
+This is the routine where your applications are going to be spending most of their time. Almost all the other functions in this library eventually either block on a call to `getkeypress` (waiting for a key), or they are polling it in `do_not_block` mode in a loop. You can call it yourself too. You generally provide it with a list of rectangles and what you want getkeypress to return if they are pressed. (Or just pass `nil` as buttons to make the whole screen a button. `getkeypress` handles putting the display to sleep after `p.standbytimer` seconds.
 
 ####`getkeypress([buttons], [longpress_time], [do_not_block])`
 
@@ -452,7 +452,7 @@ field | description
 `4D-picaso` | *(namespace)* Pointer to the namespace for the `4D-Picaso` library. 
 `port` | *(string)* The serial device on your end that is used to talk to the display. Defaults to `/dev/ttyS0`.
 `initial_speed` | *(number)* The speed that the display expects when it is powered on. Factory setting for the display, and default for `init`, is 9600 bps. This can be changed on the display if you use the 4D-Systems proprietary Windows software.
-`working_speed` | *(number)* This is the speed the display will be set to first thing as `init` starts talking to it. Defaults to 57600 because I had trouble getting it to work at 115200 with my particular system, but I haven't really investigated whether this is a problem with my system or the display. 57600 is fast enough, 9600 will noticably slow things down.
+`working_speed` | *(number)* This is the speed the display will be set to first thing as `init` starts talking to it. Defaults to 57600 because I had trouble getting it to work at 115200 with my particular system, but I haven't really investigated whether this is a problem with my system or the display. 57600 is fast enough, 9600 will noticeably slow things down.
 
 ### return values
 
@@ -481,7 +481,7 @@ field | description
 `header` | *(string)* Text printed in top-left of screen.
 `defaulttext` | *(string)* The text that is already there when the user starts entering text. The cursor is placed after the last character of the defaulttext and the text is scrolled off the screen on the left if there is more than fits the display.
 `keyboard` | *(string)* selects the keyboard. `pinapl` comes with a number of keyboard layouts, called `Normal`, `Sym`, `Num`, `Vertical` and `Vert_Sym`. If you specify a keyboard by name here, `input` will start with that keyboard. If you specify no keyboard, `input` will will pick either `Normal` or `Vertical`, depending on the orientation of the screen (see `screenmode`). Also see the text below on how to add a custom keyboard layout.
-`maxlen` | *(number)* The maximum number of characters the user can enter. If this maximum is reached, the cursor turns red to indicate that the limit has been reached and no futher keys (except backspace) are processed.
+`maxlen` | *(number)* The maximum number of characters the user can enter. If this maximum is reached, the cursor turns red to indicate that the limit has been reached and no further keys (except backspace) are processed.
 `fixed_scale` | *(number)* The horizontal stretch factor of the text that is being typed. Normally `input` figures this out for itself, printing a text nice and big if it's short enough, and then making it a step more condensed if it no longer fits the screen. Only the values `1` and `2` make much sense here, to lock `input` it to the small and the large size respectively.
 `password` | *(boolean)* If this is `true`, any letters except the last one typed are replaced by stars. If `password` is set while there is a `defaulttext`, the user can not see the old password (but does know the number of characters) and can only enter that old password or type a new one.
 
@@ -511,7 +511,7 @@ Each element in the keyboards table is named after the keyboard and contains ano
 
 The strings `Back`, `Done` and `<-` are special. `Back` returns to the previous keyboard (this works only one step deep), `Done` codes as the end of user input, and `<-` codes for a backspace. If the value returned by a key is the name of another keyboard, it is shown instead. Use upper case letters on the display, and their lower-case equivalent will be shown if shift is not pressed. Any single letter will be shown with an xscale of 2, any longer string will be condensed (xscale 1).
 
-*If you were to look at the code, you'd notice that the `Normal` QWERTY-keyboard has spacings of `-1` for the keys on the top row. This makes keys overlap by one pixel and was a quick hack to make the keys on the top row fit neatly. Also note that if you do manage to use the 4D-Systems windows software to load a font with special characters on the display, `input` may need some work to deal with them. The `:lower()` funtion may not know the lower case equivalent of an accented letter, for instance.*
+*If you were to look at the code, you'd notice that the `Normal` QWERTY-keyboard has spacings of `-1` for the keys on the top row. This makes keys overlap by one pixel and was a quick hack to make the keys on the top row fit neatly. Also note that if you do manage to use the 4D-Systems windows software to load a font with special characters on the display, `input` may need some work to deal with them. The `:lower()` function may not know the lower case equivalent of an accented letter, for instance.*
 
 
 <br>
