@@ -14,7 +14,7 @@ This project takes a different path. **`pinapl`** (pronounced "pineapple") provi
 
 [![](images/example-lua.jpg)](http://www.youtube.com/watch?v=k3sRRXSDI7Y)
 
-This video shows the `example.lua` demo application, the code is shown a little bit further down in this text.
+This one-minute video shows the `example.lua` demo application, the code is shown a little bit further down in this text.
 
 ## the display
 
@@ -112,9 +112,10 @@ Drawing things directly to the display is fun, but writing anything useful can b
 
 getting started with `pinapl` is as easy as using the display library directly. All you need to do now is `require` both libraries and call `init` from `pinapl`. You'll see how that's done in the example below.
 
-### not really a dependency: `luasocket` still nice to have
+### Another (almost-)dependency: `luasocket`
 
-`pinapl` doesn't depend on anything but the `4D-picaso` library we talked about earlier (and through it, on `lua-rs232`). But if it finds the TCP/IP socket library available, the `socket.gettime()` function is used instead of `os.time()`. The latter has a one second precision, where the socket library's function is much more precise (to 1/100's of a second). Precise time is useful, for instance to help detect how long a user is pressing a key. Without it, you may have to wait anywhere between 1 and 2 seconds for a context menu. On OpenWRT install the socket library with `opkg install luasocket`.
+`pinapl` depends on the `4D-picaso` library we talked about earlier (and through it, on `lua-rs232`). But it would also like to find the `luasocket` TCP/IP socket library. Not because it needs to speak TCP/IP, but because the `socket.gettime()` function can then be used instead of `os.time()`. The latter has a one second precision, where the socket library's function is much more precise (to 1/100's of a second). Precise time is useful, for instance to help detect how long a user is pressing a key. Without it, you may have to wait anywhere between 1 and 2 seconds for a context menu. On OpenWRT install the socket library with `opkg install luasocket`. Alternatively, comment out the `local socket = require("socket")` line in `pinapl.lua` (by placing `--` in front of it) if you are ok with 1-second precision.
+
 
 ### don't teach me, show me!
 
