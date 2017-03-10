@@ -103,7 +103,7 @@ There are commands for many things: drawing lines, printing text, changing font,
 
 It's important to remember that even if you use `pinapl`'s dialogs and menus that we'll talk about in a minute, you are still free to use the commands from this underlying display library directly.
 
-> **Note:** I use 57600 bps because for some reason I cannot get 115200 bps to work between my access point and the display. It could be that one of the devices is too far off the actual speed for the two to talk to each other. I'll investigate later, but for now I use 57600 bps as the default higher speed.
+> **Note:** I used 57600 bps when talking to my access point because I could not get 115200 bps to work between it and the display: the GL-iNet's listed serial speed is too far off the actual speed for the two to talk to each other. 115200 bps worked fine with my other project: talking to a [VoCore2 module](http://vocore.io/v2.html). More about that project soon.
 
 <br>
 ## `pinapl.lua`, building applications
