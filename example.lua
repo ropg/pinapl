@@ -5,7 +5,7 @@ p = require("pinapl")		-- This is the part that makes the dialogs, menus, etc
 
 p.standbytimer = 180		-- Go to sleep if nothing pressed for this many seconds
 
-p.init(d)					-- Initialize the port and the display
+p.init(d, '/dev/ttyS1')					-- Initialize the port and the display
 
 while true do
 

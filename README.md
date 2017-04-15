@@ -275,13 +275,13 @@ p.init(d)	-- add a serial port device as second argument here if it isn't /dev/t
 Many arguments to the functions are optional. If you want to use the defaults on some arguments but pass an argument that comes after, simply pass `nil` in the earlier arguments. 
 
 <br>
-##backlight
+## backlight
 
 Turn the display's backlight on and off. Note that the display backlight is rated to take 30,000 hours to shine half as bright. That is roughly three years, so do not keep the display on all the time on an appliance that is going to be sitting in a corner somewhere. 
 
 You should not need to to call this though, because generally you want the display to be in its own sleep state when it's not displaying anything. And even [`sleep`](#sleep) you probably don't want to call yourself, as the [`getkeypress`](#getkeypress) takes care of this after `standbytimer` seconds.
 
-####`backlight(state)`
+#### `backlight(state)`
 
 ### arguments
 
@@ -295,7 +295,7 @@ field | description
 
 
 <br>
-##browsefile
+## browsefile
 
 ![](images/browsefile.jpg)
 
@@ -305,7 +305,7 @@ Because `browsefile` returns `nil` if cancel is pressed, and `editfile` defaults
 
 **IMPORTANT NOTE**:	browsefile currently only works on unix systems. That is: it assumes forward slashes  and it calls `ls` to do some of the work.
 
-####`browsefile([header], [dir], [longpress_time], [capture], [extra_button])`
+#### `browsefile([header], [dir], [longpress_time], [capture], [extra_button])`
 
 ### arguments
 
@@ -327,11 +327,11 @@ field | description
 
 
 <br>
-##clearscreen
+## clearscreen
 
 `clearscreen` does what it says on the box. It does not reset the various parameters (such as line spacing, underline, etc, etc) that the `gfx_Cls` function in the underlying display library resets. It simply draws a full-screen rectangle of the specified colour.
 
-####`clearscreen ([colour])`
+#### `clearscreen ([colour])`
 
 ### arguments
 
@@ -355,7 +355,7 @@ if p.dialog("You've got a problem...", "Something bad happened. Continue?", {"Ye
 
 ![](images/dialog.jpg)
 
-####`dialog([header], text, [buttons], [font], [xscale], [yscale], [ygap])`
+#### `dialog([header], text, [buttons], [font], [xscale], [yscale], [ygap])`
 
 ### arguments
 
@@ -404,7 +404,7 @@ field | description
 
 This is the routine where your applications are going to be spending most of their time. Almost all the other functions in this library eventually either block on a call to `getkeypress` (waiting for a key), or they are polling it in `do_not_block` mode in a loop. You can call it yourself too. You generally provide it with a list of rectangles and what you want getkeypress to return if they are pressed. (Or just pass `nil` as buttons to make the whole screen a button. `getkeypress` handles putting the display to sleep after `p.standbytimer` seconds.
 
-####`getkeypress([buttons], [longpress_time], [do_not_block])`
+#### `getkeypress([buttons], [longpress_time], [do_not_block])`
 
 ### arguments
 
@@ -446,7 +446,7 @@ We then start talking to the display, set it to the desired speed, turn on its t
 
 Note: if the display is set at a higher speed and init is called again, it will simply ignore that there's no display at 9600 bps and continue at the higher speed. I.e.: it will work if you call init again without resetting the display.
 
-####`init(4D-picaso, [port], [initial_speed], [working_speed])`
+#### `init(4D-picaso, [port], [initial_speed], [working_speed])`
 
 ### arguments
 
@@ -530,7 +530,7 @@ s = p.listbox("Some header", {"Option 1", "Option 2", {"#FF0000", "Option 3", "L
 
 ![](images/listbox.jpg)
 
-####`listbox([header], options, [longpress_time], [offset], [extra_button], [no_cancel], [xmargin], [font], [xscale], [yscale], [ygap])`
+#### `listbox([header], options, [longpress_time], [offset], [extra_button], [no_cancel], [xmargin], [font], [xscale], [yscale], [ygap])`
 
 ### arguments
 
@@ -579,7 +579,7 @@ mode | *(number)* 0 through 3 to indicate the new orientation of the screen. 0 m
 
 `sleep` calls the sleep function in the display, putting it in a low-power mode until the user presses anywhere on the screen for half a second or so. `sleep` will block until that happens. You typically do not need to call `sleep` yourself: [`getkeypress`](#getkeypress) takes care of this after `standbytimer` seconds. 
 
-####`sleep()`
+#### `sleep()`
 
 ### arguments
 
