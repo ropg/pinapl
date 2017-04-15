@@ -58,6 +58,7 @@ The code for this project is specific to the serial protocol spoken by this type
 Nothing says there can't be a simple abstraction layer built between the code that talks to the display and the code that makes pretty dialogs and menus. That way this could talk to other displays that speak different protocols. If you know of really cheap touch-displays that you would like this to work with, please let me know. 
 
 <br>
+
 ## hooking it up: my setup
 
 ![](images/AR-300M.jpg)
@@ -69,6 +70,7 @@ I hooked the display up to the GLi [AR-300M](https://www.gl-inet.com/ar300m/) ru
 The serial port, power and ground are in the blue connector. 5 volts is not available on any header connectors on this access point, so that (brown) wire is soldered to the 5V on the USB connector pin on the bottom of the board. Note that the RX on the display goes to the TX on your access point or computer and vice versa. The extra red wire is for the reset. Turns out that even if you tell OpenWRT not to use the serial port as a console port (by putting a `#` in front of the line that says `askconsole` in `/etc/inittab`) the UBoot bootloader will still get confused if something talks back at it during boot. So my access point would not boot with the display attached. Instead of loading a new bootloader that did not use the serial port, I decided to see if the GPIO line (gpio 16) available on this board was maybe low during boot, so I could tie it to the reset wire to shut the display up during boot. I was lucky. As an added bonus, I can now also reset the display if it ever gets confused. Below, in the [building appliances](#building-appliances) chapter, you can see how this is used.
 
 <br>
+
 ## `4D-Picaso.lua`, the display interface library
 
 Alright, so we have the display hooked up to the serial port. Now we want to make things happen. To make pinapl, I decided to finally learn Lua, a programming language which is very well suited for these kinds of projects. If you want to use pinapl, you'll need to learn Lua. Which is fun, I promise. If you already speak C, PHP, Python, perl or really any other programming language, this should be easy. But even if you don't, Lua is a good choice for a first programming language: it's compact without being a straightjacket, and it is quite versatile. The book "[Programming in Lua](https://www.lua.org/pil/)" is a good resource to start with.
@@ -106,6 +108,7 @@ It's important to remember that even if you use `pinapl`'s dialogs and menus tha
 > **Note:** I used 57600 bps when talking to my access point because I could not get 115200 bps to work between it and the display: the GL-iNet's listed serial speed is too far off the actual speed for the two to talk to each other. 115200 bps worked fine with my other project: talking to a [VoCore2 module](http://vocore.io/v2.html). More about that project soon.
 
 <br>
+
 ## `pinapl.lua`, building applications
 
 Drawing things directly to the display is fun, but writing anything useful can be time-consuming. You'd have to work out where to put things on the display, write code to poll any touch events. A lot of this work is what `pinapl` is built to do for you. With `pinapl`, all you need to do is call a function for a menu or text-input  to appear. This way, your code can concentrate on what the device is supposed to do.
@@ -210,6 +213,7 @@ Don't worry if you don't understand everything that is going on in this example 
 What is important in the above example is that you get a feel for what complete appliance-like functionality looks like in code. I hope it inspires you to make your own things. Check the [function documentation](#pinapl-function-documentation) for a complete description of all the functions.
 
 <br>
+
 ## Building appliances
 
 Typically, you would want this display to work when your device boots. And since in many situations it will be the only user interface to the device, it better be running. I've created the following OpenWRT-specific init script to start our example program using a shell wrapper. Assuming the files from the repository are at `/root/pinapl`, you could save the following at `/etc/init.d/pinapl`:
@@ -275,6 +279,7 @@ p.init(d)	-- add a serial port device as second argument here if it isn't /dev/t
 Many arguments to the functions are optional. If you want to use the defaults on some arguments but pass an argument that comes after, simply pass `nil` in the earlier arguments. 
 
 <br>
+
 ## backlight
 
 Turn the display's backlight on and off. Note that the display backlight is rated to take 30,000 hours to shine half as bright. That is roughly three years, so do not keep the display on all the time on an appliance that is going to be sitting in a corner somewhere. 
@@ -295,6 +300,7 @@ field | description
 
 
 <br>
+
 ## browsefile
 
 ![](images/browsefile.jpg)
@@ -327,6 +333,7 @@ field | description
 
 
 <br>
+
 ## clearscreen
 
 `clearscreen` does what it says on the box. It does not reset the various parameters (such as line spacing, underline, etc, etc) that the `gfx_Cls` function in the underlying display library resets. It simply draws a full-screen rectangle of the specified colour.
@@ -345,6 +352,7 @@ field | description
 				
 
 <br>
+
 ## dialog
 
 `dialog` presents a dialog screen. It word-wraps and centres what's in `text`, and prints it above the buttons. Dialog screens do not have a cancel button in the top right: if you want users to be able to cancel, just mark one of the buttons accordingly.
@@ -374,6 +382,7 @@ field | description
 
 
 <br>
+
 ## editfile
 
 ```lua
@@ -400,6 +409,7 @@ field | description
 
 
 <br>
+
 ## getkeypress
 
 This is the routine where your applications are going to be spending most of their time. Almost all the other functions in this library eventually either block on a call to `getkeypress` (waiting for a key), or they are polling it in `do_not_block` mode in a loop. You can call it yourself too. You generally provide it with a list of rectangles and what you want getkeypress to return if they are pressed. (Or just pass `nil` as buttons to make the whole screen a button. `getkeypress` handles putting the display to sleep after `p.standbytimer` seconds.
@@ -424,6 +434,7 @@ field | description
 
 
 <br>
+
 ## init
 
 Before you can start using the display, you call init. The proper order is to first `require` both libraries, then change any defaults and then call init. You'll notice that the `4D-Picaso` library also has an `init` function, but you don't need to call it if you use `pinapl`; its `init` will call the other one. So here's an example for how your code might start:
@@ -463,6 +474,7 @@ field | description
 
 
 <br>
+
 ## input
 
 ```lua
@@ -518,6 +530,7 @@ The strings `Back`, `Done` and `<-` are special. `Back` returns to the previous 
 
 
 <br>
+
 ## listbox
 
 `listbox` lets the user pick from a list of options. It will allow scrolling through a larger list by presenting 'Up' and 'Down' buttons to the right of the listbox if the list of options is larger than the screen. It detects long presses if you wish and has a host of other features that will come in handy when you see how listbox can be used to create higher level functionality such as `pinapl`'s built-in file browser and editor.
@@ -556,6 +569,7 @@ field | description
 
 
 <br>
+
 ## screenmode
 
 Screenmode turns the screen to a new orientation and clears the screen. Any of the four sides of the screen can be the top. `screenmode` sets three variables. `scr_w` and `scr_h` contain the width and height of the display in pixels respectively, and `scr_mode` holds the current mode. Your code would read the width as `p.scr_w`, if `pinapl` is referenced as `p` at the start of your program. The "pretty circles" menu option in `example.lua` makes use of height and width to figure out where to draw the circles, and the "Toggle orientation" option shows the use of `screenmode`.
@@ -575,6 +589,7 @@ mode | *(number)* 0 through 3 to indicate the new orientation of the screen. 0 m
 `screenmode` does not return any values.
 
 <br>
+
 ## sleep
 
 `sleep` calls the sleep function in the display, putting it in a low-power mode until the user presses anywhere on the screen for half a second or so. `sleep` will block until that happens. You typically do not need to call `sleep` yourself: [`getkeypress`](#getkeypress) takes care of this after `standbytimer` seconds. 
@@ -591,6 +606,7 @@ mode | *(number)* 0 through 3 to indicate the new orientation of the screen. 0 m
 
 
 <br>
+
 ## viewfile
 
 ```lua
