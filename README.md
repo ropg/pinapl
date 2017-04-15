@@ -487,7 +487,7 @@ new_hostname = p.input("Enter hostname:", current_hostname)
 
 The shift key is sticky, meaning that it is pressed before and not during the keypress to be shifted. (This is a resistive touch screen, so there is no multi-touch). Normally shift turns grey when active and release after one more key. If you press shift twice it will lock (shown in red) and stay on for multiple keypresses. Shift-backspace will delete everything left of the cursor.
 
-####`input([header], [defaulttext], [keyboard], [maxlen], [fixed_xscale], [password])`
+#### `input([header], [defaulttext], [keyboard], [maxlen], [fixed_xscale], [password])`
 
 ### arguments
 
